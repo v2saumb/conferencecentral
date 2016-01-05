@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-cosmo.css">
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/animations.css">
     <link rel="stylesheet" href="/css/offcanvas.css">
     <link rel="shortcut icon" href="/img/favicon.ico">
     <meta property="og:title" content="Conference Central">
@@ -67,7 +68,7 @@
     </div>
 </div>
 
-<div class="container">
+<div class="container animation-container">
     <div class="row">
         <div class="col-lg-12">
             <div id="rootMessages" class="alert alert-{{alertStatus}}" ng-show="rootMessages">
@@ -77,7 +78,7 @@
             </div>
         </div>
     </div>
-    <ng-view></ng-view>
+    <div ng-view class="animated-view"></div>
 </div>
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
