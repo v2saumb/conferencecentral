@@ -17,6 +17,57 @@ import endpoints
 from protorpc import messages
 from google.appengine.ext import ndb
 
+class SESSION_TYPE(messages.Enum):
+    NOT_SPECIFIED = 0
+    WORKSHOP = 1
+    LECTURE = 2
+    THINKTANK = 3
+    SKILLBUILDER = 4
+    EXPERTSPEAK = 5
+
+class TeeShirtSize(messages.Enum):
+    """TeeShirtSize -- t-shirt size enumeration value"""
+    NOT_SPECIFIED = 1
+    XS_M = 2
+    XS_W = 3
+    S_M = 4
+    S_W = 5
+    M_M = 6
+    M_W = 7
+    L_M = 8
+    L_W = 9
+    XL_M = 10
+    XL_W = 11
+    XXL_M = 12
+    XXL_W = 13
+    XXXL_M = 14
+    XXXL_W = 15
+# sntities for Session
+
+class ConfSession(ndb.Model):
+    session_name = ndb.StringProperty(required=True)
+    highlights = ndb.StringProperty()
+    speaker =  ndb.StringProperty(repeated=True)
+    duration = ndb.IntegerProperty(default=30)
+    type_of_session = ndb.StringProperty(default="NOT_SPECIFIED")
+    date = ndb.DateProperty()
+    start_time = ndb.TimeProperty()
+    venue = ndb.StringProperty()
+
+class ConfSessionForm(messages.Message):
+    session_name = messages.StringField(1)
+    highlights = messages.StringField(2)
+    speaker =  messages.StringField(3,repeated=True)
+    duration = messages.IntegerField(4)
+    type_of_session = messages.EnumField('SESSION_TYPE',5)
+    date = messages.StringField(6)
+    start_time = messages.StringField(7)
+    websafeKey = messages.StringField(8)
+    venue = messages.StringField(9)
+
+class ConfSessionForms(messages.Message):
+    """ConfSesionForms -- multiple Conference session outbound form message"""
+    items = messages.MessageField(ConfSessionForm, 1, repeated=True)
 
 # creating entity for speaker
 class Speaker(ndb.Model):
@@ -101,23 +152,7 @@ class ConferenceQueryForms(messages.Message):
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
 
 
-class TeeShirtSize(messages.Enum):
-    """TeeShirtSize -- t-shirt size enumeration value"""
-    NOT_SPECIFIED = 1
-    XS_M = 2
-    XS_W = 3
-    S_M = 4
-    S_W = 5
-    M_M = 6
-    M_W = 7
-    L_M = 8
-    L_W = 9
-    XL_M = 10
-    XL_W = 11
-    XXL_M = 12
-    XXL_W = 13
-    XXXL_M = 14
-    XXXL_W = 15
+
 
 # needed for conference registration
 class BooleanMessage(messages.Message):

@@ -25,7 +25,8 @@ from google.appengine.ext import ndb
 from models import Profile
 from models import ProfileMiniForm
 from models import ProfileForm
-from models import TeeShirtSize
+from models import TeeShirtSize, SESSION_TYPE
+
 
 from utils import getUserId
 
@@ -38,7 +39,7 @@ from models import ConferenceQueryForms
 from models import BooleanMessage
 from models import ConflictException
 from models import Speaker, SpeakerForm
-
+from models import ConfSession, ConfSessionForm, ConfSessionForms
 from google.appengine.api.logservice import logservice
 
 # adding imports for memcache
@@ -50,6 +51,8 @@ from google.appengine.api import taskqueue
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 MEMCACHE_ANNOUNCEMENTS_KEY="LIMITED-SEATS-AVAILABLE"
+
+# default values for conf object
 DEFAULTS = {
     "city": "Default City",
     "maxAttendees": 0,
@@ -57,10 +60,19 @@ DEFAULTS = {
     "topics": ["Default", "Topic"],
 }
 
+# default values for speaker object
 SPEAKER_DEFAULTS = {
     "speakerSessions": ["Default", "City"],
     "topics": ["Default", "Topic"],
 }
+# default values for confSession object
+SESSION_DEFAULTS = {
+    'highlights' : '',
+    'speaker' :  '',
+    'duration' : 30,
+    'type_of_session' : "NOT_SPECIFIED"
+}
+
 OPERATORS = {
     'EQ':   '=',
     'GT':   '>',
@@ -87,6 +99,14 @@ CONF_POST_REQUEST = endpoints.ResourceContainer(
     websafeConferenceKey=messages.StringField(1),
 )
 
+CONFSESSION_POST_REQUEST = endpoints.ResourceContainer(
+    ConfSessionForm,
+    websafeConferenceKey=messages.StringField(1),
+)
+CONFSESSION_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeConferenceKey=messages.StringField(1),
+)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -157,17 +177,6 @@ class ConferenceApi(remote.Service):
         # return ProfileForm
         return self._copyProfileToForm(prof)
 
-    @endpoints.method(message_types.VoidMessage, ProfileForm,
-                      path='profile', http_method='GET', name='getProfile')
-    def getProfile(self, request):
-        """Return user profile."""
-        return self._doProfile()
-
-    @endpoints.method(ProfileMiniForm, ProfileForm,
-                      path='profile', http_method='POST', name='saveProfile')
-    def saveProfile(self, request):
-        """Update & return user profile."""
-        return self._doProfile(request)
 
 
 # - - - Conference objects - - - - - - - - - - - - - - - - - - -
@@ -190,6 +199,25 @@ class ConferenceApi(remote.Service):
         cf.check_initialized()
         return cf
 
+    def _copyConfSessionToForm(self, conf):
+        """Copy relevant fields from Conference to ConferenceForm."""
+        logging.info(str(conf))
+        cf = ConfSessionForm()
+        for field in cf.all_fields():
+            if hasattr(conf, field.name):
+                # convert Date to date string; just copy others
+                if field.name in ('date','start_time'):
+                    setattr(cf, field.name, str(getattr(conf, field.name)))
+                elif field.name == 'type_of_session':
+                    logging.info("the field ame ")
+                    logging.info(str(getattr(SESSION_TYPE, getattr(conf, field.name))))
+                    setattr(cf, field.name, getattr(SESSION_TYPE, getattr(conf, field.name)))
+                else:
+                    setattr(cf, field.name, getattr(conf, field.name))
+            elif field.name == "websafeKey":
+                setattr(cf, field.name, conf.key.urlsafe())
+        cf.check_initialized()
+        return cf
     def _createConferenceObject(self, request):
         """Create or update Conference object, returning ConferenceForm/request."""
         # preload necessary data items
@@ -286,51 +314,6 @@ class ConferenceApi(remote.Service):
         prof = ndb.Key(Profile, user_id).get()
         return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
 
-    @endpoints.method(ConferenceForm, ConferenceForm, path='conference',
-                      http_method='POST', name='createConference')
-    def createConference(self, request):
-        """Create new conference."""
-        return self._createConferenceObject(request)
-
-    @endpoints.method(CONF_POST_REQUEST, ConferenceForm,
-                      path='conference/{websafeConferenceKey}',
-                      http_method='PUT', name='updateConference')
-    def updateConference(self, request):
-        """Update conference w/provided fields & return w/updated info."""
-        return self._updateConferenceObject(request)
-
-    @endpoints.method(CONF_GET_REQUEST, ConferenceForm,
-                      path='conference/{websafeConferenceKey}',
-                      http_method='GET', name='getConference')
-    def getConference(self, request):
-        """Return requested conference (by websafeConferenceKey)."""
-        # get Conference object from request; bail if not found
-        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' % request.websafeConferenceKey)
-        prof = conf.key.parent().get()
-        # return ConferenceForm
-        return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
-
-    @endpoints.method(message_types.VoidMessage, ConferenceForms,
-                      path='getConferencesCreated',
-                      http_method='POST', name='getConferencesCreated')
-    def getConferencesCreated(self, request):
-        """Return conferences created by user."""
-        # make sure user is authed
-        user = endpoints.get_current_user()
-        if not user:
-            raise endpoints.UnauthorizedException('Authorization required')
-        user_id =  getUserId(user)
-        # create ancestor query for all key matches for this user
-        confs = Conference.query(ancestor=ndb.Key(Profile, user_id))
-        prof = ndb.Key(Profile, user_id).get()
-        # return set of ConferenceForm objects per Conference
-        return ConferenceForms(
-            items=[self._copyConferenceToForm(
-                conf, getattr(prof, 'displayName')) for conf in confs]
-        )
 
     def _getQuery(self, request):
         """Return formatted query from the submitted filters."""
@@ -383,6 +366,308 @@ class ConferenceApi(remote.Service):
 
             formatted_filters.append(filtr)
         return (inequality_field, formatted_filters)
+
+    
+    @ndb.transactional(xg=True)   
+    def _conferenceRegistration(self, request, reg=True):
+        """Register or unregister user for selected conference."""
+        retval = None
+        prof = self._getProfileFromUser() # get user Profile
+
+        # check if conf exists given websafeConfKey
+        # get conference; check that it exists
+        wsck = request.websafeConferenceKey
+        conf = ndb.Key(urlsafe=wsck).get()
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % wsck)
+
+        # register
+        if reg:
+            # check if user already registered otherwise add
+            if wsck in prof.conferenceKeysToAttend:
+                raise ConflictException(
+                    "You have already registered for this conference")
+
+            # check if seats avail
+            if conf.seatsAvailable <= 0:
+                raise ConflictException(
+                    "There are no seats available.")
+
+            # register user, take away one seat
+            prof.conferenceKeysToAttend.append(wsck)
+            conf.seatsAvailable -= 1
+            retval = True
+
+        # unregister
+        else:
+            # check if user already registered
+            if wsck in prof.conferenceKeysToAttend:
+
+                # unregister user, add back one seat
+                prof.conferenceKeysToAttend.remove(wsck)
+                conf.seatsAvailable += 1
+                retval = True
+            else:
+                retval = False
+
+        # write things back to the datastore & return
+        prof.put()
+        conf.put()
+        return BooleanMessage(data=retval)
+
+    
+    def _createConfSession(self, request):
+        """Create or update Conference Session object, returning ConfSessionForm/request."""
+        # preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = getUserId(user)
+
+        if not request.websafeConferenceKey:
+            raise endpoints.BadRequestException(
+                "Conference 'websafeConferenceKey' field required")
+
+        if not request.session_name:
+            raise endpoints.BadRequestException(
+                "Conference 'session_name' field required")
+        # get the conference key
+        conf_key = ndb.Key(urlsafe=request.websafeConferenceKey)
+        conf = conf_key.get()
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.websafeConferenceKey)
+        
+        if conf.organizerUserId != user_id:
+            logging.info(conf.organizerUserId + " != " + user_id)
+            raise endpoints.NotFoundException(
+                'Only organiser can add sessions. Please contact %s'%conf.organizerUserId)
+
+
+        # copy ConferenceForm/ProtoRPC Message into dict
+        data = {field.name: getattr(request, field.name)
+                for field in request.all_fields()}
+        del data['websafeKey']
+        del data['websafeConferenceKey']
+
+        # add default values for those missing (both data model & outbound
+        # Message)
+        for df in SESSION_DEFAULTS:
+            if data[df] in (None, []):
+                data[df] = SESSION_DEFAULTS[df]
+                setattr(request, df, SESSION_DEFAULTS[df])
+
+        # convert dates from strings to Date objects; set month based on
+        # start_date
+        if data['date']:
+            data['date'] = datetime.strptime(
+                data['date'][:10], "%Y-%m-%d").date()
+
+        # convert time
+        if data['start_time']:
+            data['start_time'] = datetime.strptime(
+                data['start_time'][:5], "%H:%M").time()
+            logging.info("the time is " + str(data['start_time'] ) )
+
+        # convert session type
+        if data['type_of_session']:
+            logging.info(" sss ", str(data['type_of_session']))
+            data['type_of_session'] = str(data['type_of_session'])      
+        
+
+       
+        # generate Profile Key based on user ID and Conference
+        # ID based on Profile key get Conference key from ID
+        c_id = ConfSession.allocate_ids(size=1, parent=conf_key)[0]
+        c_key = ndb.Key(ConfSession, c_id, parent=conf_key)
+        data['key'] = c_key
+        # create Conference & return (modified) ConferenceForm
+        ConfSession(**data).put()
+        confSession = c_key.get()
+        return self._copyConfSessionToForm(confSession)
+    
+# - - - Announcements - - - - - - - - - - - - - - - - - - - -
+
+    @staticmethod
+    def _cacheAnnouncement():
+        """Create Announcement & assign to memcache; used by
+        memcache cron job & putAnnouncement().
+        """
+        logging.info("in the method for set announcements")
+        confs = Conference.query(ndb.AND(
+            Conference.seatsAvailable <= 5,
+            Conference.seatsAvailable > 0)
+        ).fetch(projection=[Conference.name])
+        logging.info(str(confs))
+        if confs:
+            # If there are almost sold out conferences,
+            # format announcement and set it in memcache
+            announcement = '%s %s' % (
+                'Last chance to attend! The following conferences '
+                'are nearly sold out:',
+                ', '.join(conf.name for conf in confs))
+            memcache.set(MEMCACHE_ANNOUNCEMENTS_KEY, announcement)
+        else:
+            # If there are no sold out conferences,
+            # delete the memcache announcements entry
+            announcement = ""
+            memcache.delete(MEMCACHE_ANNOUNCEMENTS_KEY)
+
+        return announcement
+
+
+
+    def _createSpeaker(self, request):
+        """Create or update speaker object, returning SpeakerForm/request."""
+        # preload necessary data items
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id = getUserId(user)
+        if not request.topics:
+            raise endpoints.BadRequestException(
+                "Speaker 'topics' field required")
+
+        # copy ConferenceForm/ProtoRPC Message into dict
+        data = {field.name: getattr(request, field.name)
+                for field in request.all_fields()}
+        del data['websafeKey']
+
+        # add default values for those missing (both data model & outbound
+        # Message)
+        for df in SPEAKER_DEFAULTS:
+            if data[df] in (None, []):
+                data[df] = SPEAKER_DEFAULTS[df]
+                setattr(request, df, SPEAKER_DEFAULTS[df])
+
+        p_key = ndb.Key(Profile, user_id)
+        speaker_id = Speaker.allocate_ids(size=1, parent=p_key)[0]
+        speaker_key = ndb.Key(Speaker, speaker_id, parent=p_key)
+        data['key'] = speaker_key
+        logging.info(data['key'])
+        data['speakerUserId'] = request.speakerUserId = user_id
+
+        # create Conference & return (modified) ConferenceForm
+        Speaker(**data).put()
+        # taskqueue.add(params={'email': user.email(),
+        #     'conferenceInfo': repr(request)},
+        #     url='/tasks/send_confirmation_email'
+        # )
+        return request 
+    def _copySpeakerToForm(self, speakerProfile, displayName):
+        """Copy relevant fields from Speaker to SpeakerForm."""
+        spkr = SpeakerForm()
+        if not speakerProfile:
+            return spkr
+        speaker = speakerProfile[0]
+        for field in spkr.all_fields():
+            if hasattr(speaker, field.name):
+                setattr(spkr, field.name, getattr(speaker, field.name))
+            elif field.name == "websafeKey":
+                setattr(spkr, field.name, speaker.key.urlsafe())
+        spkr.check_initialized()
+        return spkr   
+
+    def _verifySpeaker(self, request):
+        """Verifys if the speaker is registered SpeakerForm/request."""
+            # make sure user is authed
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id =  getUserId(user)
+        # create ancestor query for all key matches for this user
+        speaker = Speaker.query(ancestor=ndb.Key(Profile, user_id)).fetch()
+        logging.info(str(speaker))
+        prof = ndb.Key(Profile, user_id).get()
+        # return SpeakerForm object
+
+        return self._copySpeakerToForm(speaker, getattr(prof, 'displayName'))
+
+    # register a user as speaker
+    @endpoints.method(SpeakerForm, SpeakerForm, path='registerSpeaker',
+                      http_method='POST', name='registerSpeaker')
+    def registerSpeaker(self, request):
+        """Register a Speaker."""
+        return self._createSpeaker(request)
+
+    # verify if the user is already registered as speaker
+    @endpoints.method(message_types.VoidMessage, SpeakerForm, path='speakerExists',
+                      http_method='POST', name='speakerExists')
+    def speakerExists(self, request):
+        """Register a Speaker."""
+        return self._verifySpeaker(request)
+    @endpoints.method(message_types.VoidMessage, StringMessage,
+            path='conference/announcement/get',
+            http_method='GET', name='getAnnouncement')
+    def getAnnouncement(self, request):
+        """Return Announcement from memcache."""
+        # TODO 1
+        # return an existing announcement from Memcache or an empty string.
+        logging.info(MEMCACHE_ANNOUNCEMENTS_KEY)
+        announcement = memcache.get(MEMCACHE_ANNOUNCEMENTS_KEY)
+        if not announcement:
+            announcement=""
+        logging.info(announcement)
+        return StringMessage(data=announcement)
+
+    @endpoints.method(message_types.VoidMessage, ProfileForm,
+                      path='profile', http_method='GET', name='getProfile')
+    def getProfile(self, request):
+        """Return user profile."""
+        return self._doProfile()
+
+    @endpoints.method(ProfileMiniForm, ProfileForm,
+                      path='profile', http_method='POST', name='saveProfile')
+    def saveProfile(self, request):
+        """Update & return user profile."""
+        return self._doProfile(request)
+
+    @endpoints.method(ConferenceForm, ConferenceForm, path='conference',
+                      http_method='POST', name='createConference')
+    def createConference(self, request):
+        """Create new conference."""
+        return self._createConferenceObject(request)
+
+    @endpoints.method(CONF_POST_REQUEST, ConferenceForm,
+                      path='conference/{websafeConferenceKey}',
+                      http_method='PUT', name='updateConference')
+    def updateConference(self, request):
+        """Update conference w/provided fields & return w/updated info."""
+        return self._updateConferenceObject(request)
+
+    @endpoints.method(CONF_GET_REQUEST, ConferenceForm,
+                      path='conference/{websafeConferenceKey}',
+                      http_method='GET', name='getConference')
+    def getConference(self, request):
+        """Return requested conference (by websafeConferenceKey)."""
+        # get Conference object from request; bail if not found
+        conf = ndb.Key(urlsafe=request.websafeConferenceKey).get()
+        if not conf:
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.websafeConferenceKey)
+        prof = conf.key.parent().get()
+        # return ConferenceForm
+        return self._copyConferenceToForm(conf, getattr(prof, 'displayName'))
+
+    @endpoints.method(message_types.VoidMessage, ConferenceForms,
+                      path='getConferencesCreated',
+                      http_method='POST', name='getConferencesCreated')
+    def getConferencesCreated(self, request):
+        """Return conferences created by user."""
+        # make sure user is authed
+        user = endpoints.get_current_user()
+        if not user:
+            raise endpoints.UnauthorizedException('Authorization required')
+        user_id =  getUserId(user)
+        # create ancestor query for all key matches for this user
+        confs = Conference.query(ancestor=ndb.Key(Profile, user_id))
+        prof = ndb.Key(Profile, user_id).get()
+        # return set of ConferenceForm objects per Conference
+        return ConferenceForms(
+            items=[self._copyConferenceToForm(
+                conf, getattr(prof, 'displayName')) for conf in confs]
+        )
 
     @endpoints.method(ConferenceQueryForms, ConferenceForms,
                       path='queryConferences',
@@ -442,55 +727,7 @@ class ConferenceApi(remote.Service):
         return ConferenceForms(
             items=[self._copyConferenceToForm(conf, "") for conf in q]
         )
-    @ndb.transactional(xg=True)   
-    def _conferenceRegistration(self, request, reg=True):
-        """Register or unregister user for selected conference."""
-        retval = None
-        prof = self._getProfileFromUser() # get user Profile
 
-        # check if conf exists given websafeConfKey
-        # get conference; check that it exists
-        wsck = request.websafeConferenceKey
-        conf = ndb.Key(urlsafe=wsck).get()
-        if not conf:
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' % wsck)
-
-        # register
-        if reg:
-            # check if user already registered otherwise add
-            if wsck in prof.conferenceKeysToAttend:
-                raise ConflictException(
-                    "You have already registered for this conference")
-
-            # check if seats avail
-            if conf.seatsAvailable <= 0:
-                raise ConflictException(
-                    "There are no seats available.")
-
-            # register user, take away one seat
-            prof.conferenceKeysToAttend.append(wsck)
-            conf.seatsAvailable -= 1
-            retval = True
-
-        # unregister
-        else:
-            # check if user already registered
-            if wsck in prof.conferenceKeysToAttend:
-
-                # unregister user, add back one seat
-                prof.conferenceKeysToAttend.remove(wsck)
-                conf.seatsAvailable += 1
-                retval = True
-            else:
-                retval = False
-
-        # write things back to the datastore & return
-        prof.put()
-        conf.put()
-        return BooleanMessage(data=retval)
-    
-    
     @endpoints.method(CONF_GET_REQUEST, BooleanMessage,
             path='conference/{websafeConferenceKey}',
             http_method='POST', name='registerForConference')
@@ -510,150 +747,39 @@ class ConferenceApi(remote.Service):
             http_method='GET', name='getConferencesToAttend')
     def getConferencesToAttend(self, request):
         """Get list of conferences that user has registered for."""
-        # TODO:
-        # step 1: get user profile
         prof = self._getProfileFromUser()
-        # step 2: get conferenceKeysToAttend from profile.
         list_of_confs = list(ndb.Key(urlsafe=wsck) for wsck in prof.conferenceKeysToAttend)
-        logging.info(str(list_of_confs))
-        # to make a ndb key from websafe key you can use:
-        # ndb.Key(urlsafe=my_websafe_key_string)
-        # step 3: fetch conferences from datastore. 
-        # Use get_multi(array_of_keys) to fetch all keys at once.
-        # Do not fetch them one by one!
         conferences = ndb.get_multi(list_of_confs)
-
         # return set of ConferenceForm objects per Conference
         return ConferenceForms(items=[self._copyConferenceToForm(conf, "")\
          for conf in conferences]
         )    
+    # create new session
+    @endpoints.method(CONFSESSION_POST_REQUEST, ConfSessionForm, path='confSession/create/{websafeConferenceKey}',
+                      http_method='POST', name='createSession')
+    def createSession(self, request):
+        """Creates a new conference session."""
+        return self._createConfSession(request)
 
-# - - - Announcements - - - - - - - - - - - - - - - - - - - -
-
-    @staticmethod
-    def _cacheAnnouncement():
-        """Create Announcement & assign to memcache; used by
-        memcache cron job & putAnnouncement().
-        """
-        logging.info("in the method for set announcements")
-        confs = Conference.query(ndb.AND(
-            Conference.seatsAvailable <= 5,
-            Conference.seatsAvailable > 0)
-        ).fetch(projection=[Conference.name])
-        logging.info(str(confs))
-        if confs:
-            # If there are almost sold out conferences,
-            # format announcement and set it in memcache
-            announcement = '%s %s' % (
-                'Last chance to attend! The following conferences '
-                'are nearly sold out:',
-                ', '.join(conf.name for conf in confs))
-            memcache.set(MEMCACHE_ANNOUNCEMENTS_KEY, announcement)
-        else:
-            # If there are no sold out conferences,
-            # delete the memcache announcements entry
-            announcement = ""
-            memcache.delete(MEMCACHE_ANNOUNCEMENTS_KEY)
-
-        return announcement
-
-
-    @endpoints.method(message_types.VoidMessage, StringMessage,
-            path='conference/announcement/get',
-            http_method='GET', name='getAnnouncement')
-    def getAnnouncement(self, request):
-        """Return Announcement from memcache."""
-        # TODO 1
-        # return an existing announcement from Memcache or an empty string.
-        logging.info(MEMCACHE_ANNOUNCEMENTS_KEY)
-        announcement = memcache.get(MEMCACHE_ANNOUNCEMENTS_KEY)
-        logging.info(announcement)
-        return StringMessage(data=announcement)
-
-    def _createSpeaker(self, request):
-        """Create or update speaker object, returning SpeakerForm/request."""
-        # preload necessary data items
-        user = endpoints.get_current_user()
-        if not user:
-            raise endpoints.UnauthorizedException('Authorization required')
-        user_id = getUserId(user)
-        if not request.topics:
-            raise endpoints.BadRequestException(
-                "Speaker 'topics' field required")
-
-        # copy ConferenceForm/ProtoRPC Message into dict
-        data = {field.name: getattr(request, field.name)
-                for field in request.all_fields()}
-        del data['websafeKey']
-
-        # add default values for those missing (both data model & outbound
-        # Message)
-        for df in SPEAKER_DEFAULTS:
-            if data[df] in (None, []):
-                data[df] = SPEAKER_DEFAULTS[df]
-                setattr(request, df, SPEAKER_DEFAULTS[df])
-
-        # p_key = ndb.Key(Profile, user_id)
-        # c_id = Conference.allocate_ids(size=1, parent=p_key)[0]
-        # c_key = ndb.Key(Conference, c_id, parent=p_key)
-        # data['key'] = c_key
-        # data['organizerUserId'] = request.organizerUserId = user_id
-
-        p_key = ndb.Key(Profile, user_id)
-        speaker_id = Speaker.allocate_ids(size=1, parent=p_key)[0]
-        speaker_key = ndb.Key(Speaker, speaker_id, parent=p_key)
-        data['key'] = speaker_key
-        logging.info(data['key'])
-        data['speakerUserId'] = request.speakerUserId = user_id
-
-        # create Conference & return (modified) ConferenceForm
-        Speaker(**data).put()
-        # taskqueue.add(params={'email': user.email(),
-        #     'conferenceInfo': repr(request)},
-        #     url='/tasks/send_confirmation_email'
-        # )
-        return request 
-    def _copySpeakerToForm(self, speakerProfile, displayName):
-        """Copy relevant fields from Speaker to SpeakerForm."""
-        spkr = SpeakerForm()
-        if not speakerProfile:
-            return spkr
-        speaker = speakerProfile[0]
-        for field in spkr.all_fields():
-            if hasattr(speaker, field.name):
-                setattr(spkr, field.name, getattr(speaker, field.name))
-            elif field.name == "websafeKey":
-                setattr(spkr, field.name, speaker.key.urlsafe())
-        spkr.check_initialized()
-        return spkr   
-
-    def _verifySpeaker(self, request):
-        """Verifys if the speaker is registered SpeakerForm/request."""
-            # make sure user is authed
+    @endpoints.method(CONFSESSION_GET_REQUEST, ConfSessionForms,
+                      path='conference/sessions/{websafeConferenceKey}',
+                      http_method='GET', name='getConferenceSessions')
+    def getConferenceSessions(self, request):
+        """Return sessions for a conference."""
+        # make sure user is authed
         user = endpoints.get_current_user()
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
         user_id =  getUserId(user)
-        # create ancestor query for all key matches for this user
-        speaker = Speaker.query(ancestor=ndb.Key(Profile, user_id)).fetch()
-        logging.info(str(speaker))
-        prof = ndb.Key(Profile, user_id).get()
-        # return SpeakerForm object
-
-        return self._copySpeakerToForm(speaker, getattr(prof, 'displayName'))
-
-
-    @endpoints.method(SpeakerForm, SpeakerForm, path='registerSpeaker',
-                      http_method='POST', name='registerSpeaker')
-    def registerSpeaker(self, request):
-        """Register a Speaker."""
-        return self._createSpeaker(request)
-
-    @endpoints.method(message_types.VoidMessage, SpeakerForm, path='speakerExists',
-                      http_method='POST', name='speakerExists')
-    def speakerExists(self, request):
-        """Register a Speaker."""
-        return self._verifySpeaker(request)
+        conf_key = ndb.Key(urlsafe=request.websafeConferenceKey)
+        conf = conf_key.get()
+        # create ancestor query for all key matches for this conference
+        confs = ConfSession.query(ancestor=conf_key)
+        # return set of ConferenceForm objects per Conference
+        return ConfSessionForms(
+            items=[self._copyConfSessionToForm(
+                conf) for conf in confs]
+        )
 # registers API
 api = endpoints.api_server([ConferenceApi])
 
