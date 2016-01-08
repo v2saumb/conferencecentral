@@ -42,32 +42,6 @@ class TeeShirtSize(messages.Enum):
     XXL_W = 13
     XXXL_M = 14
     XXXL_W = 15
-# sntities for Session
-
-class ConfSession(ndb.Model):
-    session_name = ndb.StringProperty(required=True)
-    highlights = ndb.StringProperty()
-    speaker =  ndb.StringProperty(repeated=True)
-    duration = ndb.IntegerProperty(default=30)
-    type_of_session = ndb.StringProperty(default="NOT_SPECIFIED")
-    date = ndb.DateProperty()
-    start_time = ndb.TimeProperty()
-    venue = ndb.StringProperty()
-
-class ConfSessionForm(messages.Message):
-    session_name = messages.StringField(1)
-    highlights = messages.StringField(2)
-    speaker =  messages.StringField(3,repeated=True)
-    duration = messages.IntegerField(4)
-    type_of_session = messages.EnumField('SESSION_TYPE',5)
-    date = messages.StringField(6)
-    start_time = messages.StringField(7)
-    websafeKey = messages.StringField(8)
-    venue = messages.StringField(9)
-
-class ConfSessionForms(messages.Message):
-    """ConfSesionForms -- multiple Conference session outbound form message"""
-    items = messages.MessageField(ConfSessionForm, 1, repeated=True)
 
 # creating entity for speaker
 class Speaker(ndb.Model):
@@ -76,14 +50,59 @@ class Speaker(ndb.Model):
     topics = ndb.StringProperty(repeated=True)
     speakerSessions = ndb.StringProperty(repeated=True)
     aboutSpeaker = ndb.StringProperty()
-
+# speaker form
 class SpeakerForm(messages.Message):
     """Speaker -- Speaker object"""
     speakerUserId = messages.StringField(1)
     topics = messages.StringField(2,repeated=True)
     speakerSessions = messages.StringField(3,repeated=True)
     aboutSpeaker = messages.StringField(4)
-    websafeKey = messages.StringField(5)
+    displayName = messages.StringField(5)
+    websafeKey = messages.StringField(6)
+
+class FindSpeakerForm(messages.Message):
+    displayName = messages.StringField(1)
+    websafeKey = messages.StringField(2)
+
+# Allows to return multiple Speakers
+class SpeakerForms(messages.Message):
+    """SpeakerForm -- multiple SpeakerForm outbound form message"""
+    items = messages.MessageField(SpeakerForm, 1, repeated=True)
+
+# sntities for Session
+
+class ConfSession(ndb.Model):
+    session_name = ndb.StringProperty(required=True)
+    highlights = ndb.StringProperty()
+    speaker =  ndb.StringProperty()
+    duration = ndb.IntegerProperty(default=30)
+    type_of_session = ndb.StringProperty(default="NOT_SPECIFIED")
+    date = ndb.DateProperty()
+    start_time = ndb.TimeProperty()
+    venue = ndb.StringProperty()
+
+
+class ConfSessionForm(messages.Message):
+    session_name = messages.StringField(1)
+    highlights = messages.StringField(2)
+    speaker =  messages.StringField(3)
+    duration = messages.IntegerField(4)
+    type_of_session = messages.EnumField('SESSION_TYPE',5)
+    date = messages.StringField(6)
+    start_time = messages.StringField(7)
+    websafeKey = messages.StringField(8)
+    venue = messages.StringField(9)
+    confName=messages.StringField(10)
+
+class ConfSessionForms(messages.Message):
+    """ConfSesionForms -- multiple Conference session outbound form message"""
+    items = messages.MessageField(ConfSessionForm, 1, repeated=True)
+
+
+
+
+
+
 
 class Conference(ndb.Model):
     """Conference -- Conference object"""
