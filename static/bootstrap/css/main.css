@@ -104,3 +104,16 @@ ul#conferences-list {
 .section-a {
     padding: 50px 0;
 }
+
+.dropdown-menu{
+    background-color:#007fff;
+    color:#ffffff;
+}
+.dropdown-menu > li >a{
+    color:#ffffff;
+}
+.dropdown-menu > li >a:hover,
+.dropdown-menu > li >a:focus,
+.dropdown-menu > li.active > a{
+    background-color:#0066cc;
+}

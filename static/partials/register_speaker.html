@@ -30,13 +30,6 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="sessions">Conference Session</label>
-                    <select id="sessions" ng-model="vm.speaker.speakerSessions" name="sessions"
-                            ng-options="topic for topic in vm.topics"
-                            class="form-control" multiple>
-                    </select>
-                </div>
 
                 <button ng-click="vm.registerSpeaker(speakerForm)" class="btn btn-primary" ng-if="!vm.speakerExists"
                         ng-disabled="!vm.isValidSpeaker(speakerForm) || loading">Register Speaker

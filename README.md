@@ -31,3 +31,12 @@ App Engine application for the Udacity training course.
 [4]: https://console.developers.google.com/
 [5]: https://localhost:8080/
 [6]: https://developers.google.com/appengine/docs/python/endpoints/endpoints_tool
+
+
+I Created a separate entity for Speakers for capturing a more information.
+Any Logged in user can register as a speaker.
+Sessions can be created under a conference and must have  a speaker
+There are methods in in the app to filter the sessions based on type speaker conference etc.
+The UI has also been updated to accommodate the new methods and sessions and conferences
+
+

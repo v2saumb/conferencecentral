@@ -4,7 +4,9 @@ from google.appengine.api import app_identity
 from google.appengine.api import mail
 from conference import ConferenceApi
 
+
 class SetAnnouncementHandler(webapp2.RequestHandler):
+
     def get(self):
         """Set Announcement in Memcache."""
         # TODO 1
@@ -13,12 +15,11 @@ class SetAnnouncementHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/crons/set_announcement', SetAnnouncementHandler),
-], debug=True) 
-from google.appengine.api import app_identity
-from google.appengine.api import mail
+], debug=True)
 
 
 class SendConfirmationEmailHandler(webapp2.RequestHandler):
+
     def post(self):
         """Send email confirming Conference creation."""
         mail.send_mail(
@@ -32,7 +33,36 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
         )
 
 
+class SendSessionEmailHandler(webapp2.RequestHandler):
+    """ Sends a mail to the creator of the session """
+
+    def post(self):
+        mail.send_mail(
+            'noreply@%s.appspotmail.com' % (
+                app_identity.get_application_id()),     # from
+            self.request.get('email'),                  # to
+            'You created / updated a Session!',            # subj
+            'Hi There!, \nYou created the following session \r\n\r\n%s' % self.request.get(
+                'sessioninfo')
+        )
+
+
+class SendSpeakerEmailHandler(webapp2.RequestHandler):
+    """ Sends a mail to the speaker of the session """
+
+    def post(self):
+        mail.send_mail(
+            'noreply@%s.appspotmail.com' % (
+                app_identity.get_application_id()),     # from
+            self.request.get('email'),                  # to
+            'You Are Invited To Speak At A Session!',            # subj
+            """Hi There!, \nYou re required to speak at the 
+        following session \r\n\r\n%s""" % self.request.get('sessioninfo')
+        )
+
 app = webapp2.WSGIApplication([
     ('/crons/set_announcement', SetAnnouncementHandler),
-    ('/tasks/send_confirmation_email', SendConfirmationEmailHandler),
+    ('/tasks/sendemail/createconference', SendConfirmationEmailHandler),
+    ('/tasks/sendemail/createsession', SendSessionEmailHandler),
+    ('/tasks/sendemail/speakersessioncreated', SendSpeakerEmailHandler)
 ], debug=True)

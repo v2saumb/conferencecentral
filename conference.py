@@ -62,7 +62,6 @@ DEFAULTS = {
 
 # default values for speaker object
 SPEAKER_DEFAULTS = {
-    "speakerSessions": ["Default", "City"],
     "topics": ["Default", "Topic"],
 }
 # default values for confSession object
@@ -107,6 +106,12 @@ CONFSESSION_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1),
 )
+CONFSESSIONTYPES_GET_REQUEST = endpoints.ResourceContainer(
+    message_types.VoidMessage,
+    websafeConferenceKey=messages.StringField(1),
+    sessionType=messages.StringField(2),
+)
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -185,6 +190,12 @@ class ConferenceApi(remote.Service):
         """Copy relevant fields from Conference to ConferenceForm."""
         logging.info(str(conf))
         cf = ConferenceForm()
+        # get sessions if there are any
+        if conf.key:
+            confSessions = ConfSession.query(ancestor=conf.key).order(
+                ConfSession.date).order(ConfSession.start_time)
+
+        # return set of ConferenceForm objects per Conference
         for field in cf.all_fields():
             if hasattr(conf, field.name):
                 # convert Date to date string; just copy others
@@ -196,6 +207,11 @@ class ConferenceApi(remote.Service):
                 setattr(cf, field.name, conf.key.urlsafe())
         if displayName:
             setattr(cf, 'organizerDisplayName', displayName)
+        if confSessions:
+            items = [self._copyConfSessionToForm(
+                confSession) for confSession in confSessions]
+            setattr(cf, 'confsessions', items)
+
         cf.check_initialized()
         return cf
 
@@ -203,13 +219,14 @@ class ConferenceApi(remote.Service):
         """Copy relevant fields from Conference to ConferenceForm."""
         logging.info(str(confsession))
         conf_key = confsession.key.parent()
-        conf=conf_key.get()
+        conf = conf_key.get()
         cf = ConfSessionForm()
         for field in cf.all_fields():
             if hasattr(confsession, field.name):
                 # convert Date to date string; just copy others
                 if field.name in ('date', 'start_time'):
-                    setattr(cf, field.name, str(getattr(confsession, field.name)))
+                    setattr(cf, field.name, str(
+                        getattr(confsession, field.name)))
                 elif field.name == 'type_of_session':
                     logging.info("the field ame ")
                     logging.info(
@@ -241,6 +258,7 @@ class ConferenceApi(remote.Service):
                 for field in request.all_fields()}
         del data['websafeKey']
         del data['organizerDisplayName']
+        del data['confsessions']
 
         # add default values for those missing (both data model & outbound
         # Message)
@@ -276,7 +294,7 @@ class ConferenceApi(remote.Service):
         Conference(**data).put()
         taskqueue.add(params={'email': user.email(),
                               'conferenceInfo': repr(request)},
-                      url='/tasks/send_confirmation_email'
+                      url='/tasks/sendemail/createconference'
                       )
         return request
 
@@ -486,7 +504,21 @@ class ConferenceApi(remote.Service):
         # create Conference & return (modified) ConferenceForm
         ConfSession(**data).put()
         confSession = c_key.get()
-        return self._copyConfSessionToForm(confSession)
+        returnObj = self._copyConfSessionToForm(confSession)
+        # send mail to organizer about the new conference Session
+        taskqueue.add(params={'email': user.email(),
+                              'sessioninfo': repr(returnObj)},
+                      url='/tasks/sendemail/createsession'
+                      )
+
+        # send mail to the Speaker So he knows the schedule
+        if request.speaker:
+            speakerProf = ndb.Key(urlsafe=request.speaker).get()
+            taskqueue.add(params={'email': speakerProf.speakerUserId,
+                                  'sessioninfo': repr(returnObj)},
+                          url='/tasks/sendemail/speakersessioncreated'
+                          )
+        return returnObj
 
 # - - - Announcements - - - - - - - - - - - - - - - - - - - -
 
@@ -524,6 +556,8 @@ class ConferenceApi(remote.Service):
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
         user_id = getUserId(user)
+        exSpeaker = self._verifySpeaker(request, True)
+
         if not request.topics:
             raise endpoints.BadRequestException(
                 "Speaker 'topics' field required")
@@ -532,6 +566,7 @@ class ConferenceApi(remote.Service):
         data = {field.name: getattr(request, field.name)
                 for field in request.all_fields()}
         del data['websafeKey']
+        del data['displayName']
 
         # add default values for those missing (both data model & outbound
         # Message)
@@ -540,29 +575,33 @@ class ConferenceApi(remote.Service):
                 data[df] = SPEAKER_DEFAULTS[df]
                 setattr(request, df, SPEAKER_DEFAULTS[df])
 
-        p_key = ndb.Key(Profile, user_id)
-        speaker_id = Speaker.allocate_ids(size=1, parent=p_key)[0]
-        speaker_key = ndb.Key(Speaker, speaker_id, parent=p_key)
+        if exSpeaker:
+            speaker_key = ndb.Key(urlsafe=exSpeaker.websafeKey)
+        else:
+            p_key = ndb.Key(Profile, user_id)
+            speaker_id = Speaker.allocate_ids(size=1, parent=p_key)[0]
+            speaker_key = ndb.Key(Speaker, speaker_id, parent=p_key)
+            data['speakerUserId'] = request.speakerUserId = user_id
+
         data['key'] = speaker_key
         logging.info(data['key'])
-        data['speakerUserId'] = request.speakerUserId = user_id
 
         # create Conference & return (modified) ConferenceForm
         Speaker(**data).put()
         # taskqueue.add(params={'email': user.email(),
         #     'conferenceInfo': repr(request)},
-        #     url='/tasks/send_confirmation_email'
+        #     url='//tasks/sendemail/createconference'
         # )
         return request
 
     def _copySpeakerToForm(self, speakerProfile):
         """Copy relevant fields from Speaker to SpeakerForm."""
         spkr = SpeakerForm()
-
         speaker = speakerProfile
         prof_key = speakerProfile.key.parent()
         prof = prof_key.get()
-        spkr.displayName = prof.displayName
+        if prof:
+            spkr.displayName = prof.displayName
 
         for field in spkr.all_fields():
             if hasattr(speaker, field.name):
@@ -573,7 +612,7 @@ class ConferenceApi(remote.Service):
         logging.info(str(spkr))
         return spkr
 
-    def _verifySpeaker(self, request):
+    def _verifySpeaker(self, request, suppressEx=False):
         """Verifys if the speaker is registered SpeakerForm/request."""
         # make sure user is authed
         user = endpoints.get_current_user()
@@ -584,21 +623,43 @@ class ConferenceApi(remote.Service):
         speaker = Speaker.query(ancestor=ndb.Key(Profile, user_id)).fetch()
         logging.info(str(speaker))
         prof = ndb.Key(Profile, user_id).get()
-        # return SpeakerForm object
-        if not speaker:
-            raise endpoints.NotFoundException(
-                'Speaker Not Found')
 
-        return self._copySpeakerToForm(speaker[0])
+        # raise error if speaker not found
+        if not suppressEx:
+            if not speaker:
+                raise endpoints.ConflictException(
+                    'Speaker Not Found')
+        logging.info(str(speaker))
+        if not speaker:
+            logging.info('retruning ss')
+            return None
+        else:
+            return self._copySpeakerToForm(speaker[0])
 
     def _getSpeakerSessionsByKey(self, request):
         """ Returns sessions by speaker key"""
+        logging.info(str(request))
         if not request.websafeKey:
             raise endpoints.BadRequestException(
                 "Speaker websafeKey or speaker displayName is required.")
         sessions = ConfSession.query(ConfSession.speaker == request.websafeKey).order(
             -ConfSession.date).order(ConfSession.start_time)
         return sessions
+
+    def _getSessionsByType(self, request):
+        """" Returns sessions by type"""
+        if not request.sessionType:
+            raise endpoints.BadRequestException(
+                "'sessionType'  is required.")
+        confSessions = ConfSession.query(
+            ancestor=ndb.Key(urlsafe=request.websafeConferenceKey))
+
+        sessionFilter = ndb.query.FilterNode(
+            'type_of_session', '=', request.sessionType)
+        confSessions = confSessions.filter(sessionFilter)
+        confSessions = confSessions.order(
+            -ConfSession.date).order(ConfSession.start_time)
+        return confSessions
 
     def _getSpeakerSessionsByName(self, request):
         """ Returns sessions by speaker displayname"""
@@ -809,14 +870,15 @@ class ConferenceApi(remote.Service):
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
         user_id = getUserId(user)
-        conf_key = ndb.Key(urlsafe=request.websafeConferenceKey)
-        conf = conf_key.get()
+        # conf_key = ndb.Key(urlsafe=request.websafeConferenceKey)
+        # conf = conf_key.get()
         # create ancestor query for all key matches for this conference
-        confs = ConfSession.query(ancestor=conf_key)
+        confSessions = ConfSession.query(
+            ancestor=ndb.Key(urlsafe=request.websafeConferenceKey))
         # return set of ConferenceForm objects per Conference
         return ConfSessionForms(
             items=[self._copyConfSessionToForm(
-                conf) for conf in confs]
+                confSession) for confSession in confSessions]
         )
 
     @endpoints.method(message_types.VoidMessage, SpeakerForms,
@@ -838,13 +900,27 @@ class ConferenceApi(remote.Service):
         """Return sessions by a speaker."""
 
         if request.websafeKey:
-            confs = self._getSpeakerSessionsByKey(request)
+            sessions = self._getSpeakerSessionsByKey(request)
         else:
-            confs = self._getSpeakerSessionsByName(request)
+            sessions = self._getSpeakerSessionsByName(request)
 
         return ConfSessionForms(
             items=[self._copyConfSessionToForm(
-                conf) for conf in confs]
+                session) for session in sessions]
+        )
+
+    @endpoints.method(CONFSESSIONTYPES_GET_REQUEST, ConfSessionForms,
+                      path='conference/sessions/{websafeConferenceKey}/{sessionType}',
+                      http_method='GET', name='getConferenceSessionsByType')
+    def getConferenceSessionsByType(self, request):
+        """Return sessions by a speaker."""
+
+        if request.websafeConferenceKey and request.sessionType:
+            sessions = self._getSessionsByType(request)
+
+        return ConfSessionForms(
+            items=[self._copyConfSessionToForm(
+                session) for session in sessions]
         )
 # registers API
 api = endpoints.api_server([ConferenceApi])

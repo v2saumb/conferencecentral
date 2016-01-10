@@ -17,6 +17,20 @@ indexes:
     direction: desc
   - name: start_time
 
+- kind: ConfSession
+  ancestor: yes
+  properties:
+  - name: date
+  - name: start_time
+
+- kind: ConfSession
+  ancestor: yes
+  properties:
+  - name: type_of_session
+  - name: date
+    direction: desc
+  - name: start_time
+
 - kind: Conference
   properties:
   - name: city

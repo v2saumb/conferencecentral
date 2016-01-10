@@ -38,7 +38,15 @@ handlers:       # static then dynamic
   script: main.app
   login: admin
 
-- url: /tasks/send_confirmation_email
+- url: /tasks/sendemail/createconference
+  script: main.app
+  login: admin
+
+- url: /tasks/sendemail/createsession
+  script: main.app
+  login: admin
+
+- url: /tasks/sendemail/speakersessioncreated
   script: main.app
   login: admin
 

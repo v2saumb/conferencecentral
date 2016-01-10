@@ -11,7 +11,7 @@
  * Root app, which routes and specifies the partial html and controller depending on the url requested.
  *
  */
-var app = angular.module('conferenceApp', ['ngAnimate', 'conferenceControllers', 'ngRoute', 'ui.bootstrap']).
+var app = angular.module('conferenceApp', ['ngAnimate', 'conferenceControllers', 'conferenceDirectives', 'ngRoute', 'ui.bootstrap']).
 config(['$routeProvider',
     function($routeProvider) {
         $routeProvider.

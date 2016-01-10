@@ -14,40 +14,5 @@
             <h3>Show Session(s) By  {{vm.speakerName}}</h3>
         </div>
     </div>
-    <div class="row row-offcanvas row-offcanvas-right" ng-class="{active: isOffcanvasEnabled}">
-        <div class="col-md-12">
-            <div ng-show="vm.sessions.length == 0">
-                <h4>No matching results.</h4>
-            </div>
-            <div class="table-responsive" ng-show="vm.sessions.length > 0">
-                <table id="conference-table" class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>Conference</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Duration</th>
-                            <th>Type</th>
-                            <th>Highlights</th>
-                            <th>Venue</th>
-                            
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="session in vm.sessions">
-                            <td>{{session.confName}}</td>
-                            <td>{{session.date}}</td>
-                            <td>{{session.start_time}}</td>
-                            <td>{{session.duration}}</td>
-                            <td>{{session.type_of_session}}</td>
-                            <td>{{session.highlights}}</td>
-                            <td>{{session.venue}}</td>
-                            
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-        </div>
-    </div>
+    <conference-sessions sessions="vm.sessions" show-Conf-Name="true"></conference-sessions>
 </div>
