@@ -183,6 +183,20 @@ class ConferenceApi(remote.Service):
         # return ProfileForm
         return self._copyProfileToForm(prof)
 
+    def _createSessionMailContent(self, session, conf):
+        """ formats and creates a mail content for session creator and speaker"""
+        messageTxt = """\nConference Name:\t{0}
+        \nSession:\t{1}
+        \nDuration:\t{2}
+        \nDate:\t{3}
+        \nStart Time:\t{4}
+        \nCity:\t{5}
+        \nVenue:\t{6}""".format(conf.name, session.session_name,
+                          session.duration, session.date, session.start_time,
+                          conf.city, session.venue)
+        logging.info(messageTxt)
+        return messageTxt
+
 
 # - - - Conference objects - - - - - - - - - - - - - - - - - - -
 
@@ -190,10 +204,6 @@ class ConferenceApi(remote.Service):
         """Copy relevant fields from Conference to ConferenceForm."""
         logging.info(str(conf))
         cf = ConferenceForm()
-        # get sessions if there are any
-        if conf.key:
-            confSessions = ConfSession.query(ancestor=conf.key).order(
-                ConfSession.date).order(ConfSession.start_time)
 
         # return set of ConferenceForm objects per Conference
         for field in cf.all_fields():
@@ -207,11 +217,6 @@ class ConferenceApi(remote.Service):
                 setattr(cf, field.name, conf.key.urlsafe())
         if displayName:
             setattr(cf, 'organizerDisplayName', displayName)
-        if confSessions:
-            items = [self._copyConfSessionToForm(
-                confSession) for confSession in confSessions]
-            setattr(cf, 'confsessions', items)
-
         cf.check_initialized()
         return cf
 
@@ -258,7 +263,7 @@ class ConferenceApi(remote.Service):
                 for field in request.all_fields()}
         del data['websafeKey']
         del data['organizerDisplayName']
-        del data['confsessions']
+        
 
         # add default values for those missing (both data model & outbound
         # Message)
@@ -489,11 +494,10 @@ class ConferenceApi(remote.Service):
         if data['start_time']:
             data['start_time'] = datetime.strptime(
                 data['start_time'][:5], "%H:%M").time()
-            logging.info("the time is " + str(data['start_time']))
+
 
         # convert session type
         if data['type_of_session']:
-            logging.info(" sss ", str(data['type_of_session']))
             data['type_of_session'] = str(data['type_of_session'])
 
         # generate Profile Key based on user ID and Conference
@@ -507,7 +511,7 @@ class ConferenceApi(remote.Service):
         returnObj = self._copyConfSessionToForm(confSession)
         # send mail to organizer about the new conference Session
         taskqueue.add(params={'email': user.email(),
-                              'sessioninfo': repr(returnObj)},
+                              'sessioninfo': self._createSessionMailContent(confSession, conf)},
                       url='/tasks/sendemail/createsession'
                       )
 
@@ -515,7 +519,7 @@ class ConferenceApi(remote.Service):
         if request.speaker:
             speakerProf = ndb.Key(urlsafe=request.speaker).get()
             taskqueue.add(params={'email': speakerProf.speakerUserId,
-                                  'sessioninfo': repr(returnObj)},
+                                  'sessioninfo': self._createSessionMailContent(confSession, conf)},
                           url='/tasks/sendemail/speakersessioncreated'
                           )
         return returnObj

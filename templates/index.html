@@ -27,9 +27,11 @@
         * so that Google JavaScript library ready in the angular modules.
         */
         function init() {
-        gapi.client.load('conference', 'v1', null, '//' + window.location.host + '/_ah/api');
+        gapi.client.load('conference', 'v1', null, '//' + window.location.host + '/_ah/api').then(function(){
         gapi.client.load('oauth2', 'v2', function () {
         angular.bootstrap(document, ['conferenceApp']);
+        });
+        
         });
         };
         </script>
@@ -77,12 +79,16 @@
                                             </ul>
                                         </li>
                                         <li class="nav-divider"></li>
+                                        <li ng-class="{ active: isActive('/sessions')}" ng-click="collapseNavbar()"><a href="#/sessions">  <span class="fa-stack ">
+                                            <i class="fa fa-square-o fa-stack-2x"></i>
+                                            <i class="fa fa fa-desktop fa-stack-1x"></i>
+                                        </span> Sessions</a></li>
+                                        <li class="nav-divider"></li>
                                         <li ng-class="{ active: isActive('/profile')}" ng-click="collapseNavbar()"><a href="#/profile">  <span class="fa-stack ">
                                             <i class="fa fa-square-o fa-stack-2x"></i>
                                             <i class="fa fa fa-user fa-stack-1x"></i>
-                                            </span> My Profile</a></li>
-                                        
-                                        
+                                        </span> My Profile</a></li>
+                                      
                                         
                                         <li class="nav-divider"></li>
                                     </ul>

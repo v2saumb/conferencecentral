@@ -1,12 +1,10 @@
 'use strict';
-
 /**
  * The root conferenceApp module.
  *
  * @type {conferenceApp|*|{}}
  */
 var conferenceApp = conferenceApp || {};
-
 /**
  * @ngdoc module
  * @name conferenceControllers
@@ -16,12 +14,9 @@ var conferenceApp = conferenceApp || {};
  *
  */
 conferenceApp.controllers = angular.module('conferenceControllers', ['ui.bootstrap']);
-
 /*Adding required Controllers*/
-
 conferenceApp.controllers.controller('ConferenceDetailCtrl', conferenceDetailCtrl);
 conferenceDetailCtrl.$inject = ['$scope', '$log', '$routeParams', 'HTTP_ERRORS'];
-
 /**
  * @ngdoc controller
  * @name MyProfileCtrl
@@ -29,117 +24,109 @@ conferenceDetailCtrl.$inject = ['$scope', '$log', '$routeParams', 'HTTP_ERRORS']
  * @description
  * A controller used for the My Profile page.
  */
-conferenceApp.controllers.controller('MyProfileCtrl',
-    function($scope, $log, oauth2Provider, HTTP_ERRORS) {
-        $scope.submitted = false;
-        $scope.loading = false;
-
-        /**
-         * The initial profile retrieved from the server to know the dirty state.
-         * @type {{}}
-         */
-        $scope.initialProfile = {};
-
-        /**
-         * Candidates for the teeShirtSize select box.
-         * @type {string[]}
-         */
-        $scope.teeShirtSizes = [{
-            'size': 'XS_M',
-            'text': "XS - Men's"
-        }, {
-            'size': 'XS_W',
-            'text': "XS - Women's"
-        }, {
-            'size': 'S_M',
-            'text': "S - Men's"
-        }, {
-            'size': 'S_W',
-            'text': "S - Women's"
-        }, {
-            'size': 'M_M',
-            'text': "M - Men's"
-        }, {
-            'size': 'M_W',
-            'text': "M - Women's"
-        }, {
-            'size': 'L_M',
-            'text': "L - Men's"
-        }, {
-            'size': 'L_W',
-            'text': "L - Women's"
-        }, {
-            'size': 'XL_M',
-            'text': "XL - Men's"
-        }, {
-            'size': 'XL_W',
-            'text': "XL - Women's"
-        }, {
-            'size': 'XXL_M',
-            'text': "XXL - Men's"
-        }, {
-            'size': 'XXL_W',
-            'text': "XXL - Women's"
-        }, {
-            'size': 'XXXL_M',
-            'text': "XXXL - Men's"
-        }, {
-            'size': 'XXXL_W',
-            'text': "XXXL - Women's"
-        }];
-        /**
-         * Initializes the My profile page.
-         * Update the profile if the user's profile has been stored.
-         */
-        $scope.init = function() {
-
-            if (!oauth2Provider.signedIn) {
-                var modalInstance = oauth2Provider.showLoginModal();
-                modalInstance.result.then($scope.retrieveProfileCallback);
-            } else {
-                $scope.retrieveProfileCallback();
-            }
-        };
-
-        /**
-         * Invokes the conference.saveProfile API.
-         *
-         */
-        $scope.saveProfile = function() {
-            $scope.submitted = true;
-            $scope.loading = true;
-            gapi.client.conference.saveProfile($scope.profile).
-            execute(function(resp) {
-                $scope.$apply(function() {
-                    $scope.loading = false;
-                    if (resp.error) {
-                        // The request has failed.
-                        var errorMessage = resp.error.message || '';
-                        $scope.messages = 'Failed to update a profile : ' + errorMessage;
-                        $scope.alertStatus = 'warning';
-                        $log.error($scope.messages + 'Profile : ' + JSON.stringify($scope.profile));
-
-                        if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
-                            oauth2Provider.showLoginModal();
-                            return;
-                        }
-                    } else {
-                        // The request has succeeded.
-                        $scope.messages = 'The profile has been updated';
-                        $scope.alertStatus = 'success';
-                        $scope.submitted = false;
-                        $scope.initialProfile = {
-                            displayName: $scope.profile.displayName,
-                            teeShirtSize: $scope.profile.teeShirtSize
-                        };
-
-                        $log.info($scope.messages + JSON.stringify(resp.result));
+conferenceApp.controllers.controller('MyProfileCtrl', function($scope, $log, oauth2Provider, HTTP_ERRORS) {
+    $scope.submitted = false;
+    $scope.loading = false;
+    /**
+     * The initial profile retrieved from the server to know the dirty state.
+     * @type {{}}
+     */
+    $scope.initialProfile = {};
+    /**
+     * Candidates for the teeShirtSize select box.
+     * @type {string[]}
+     */
+    $scope.teeShirtSizes = [{
+        'size': 'XS_M',
+        'text': "XS - Men's"
+    }, {
+        'size': 'XS_W',
+        'text': "XS - Women's"
+    }, {
+        'size': 'S_M',
+        'text': "S - Men's"
+    }, {
+        'size': 'S_W',
+        'text': "S - Women's"
+    }, {
+        'size': 'M_M',
+        'text': "M - Men's"
+    }, {
+        'size': 'M_W',
+        'text': "M - Women's"
+    }, {
+        'size': 'L_M',
+        'text': "L - Men's"
+    }, {
+        'size': 'L_W',
+        'text': "L - Women's"
+    }, {
+        'size': 'XL_M',
+        'text': "XL - Men's"
+    }, {
+        'size': 'XL_W',
+        'text': "XL - Women's"
+    }, {
+        'size': 'XXL_M',
+        'text': "XXL - Men's"
+    }, {
+        'size': 'XXL_W',
+        'text': "XXL - Women's"
+    }, {
+        'size': 'XXXL_M',
+        'text': "XXXL - Men's"
+    }, {
+        'size': 'XXXL_W',
+        'text': "XXXL - Women's"
+    }];
+    /**
+     * Initializes the My profile page.
+     * Update the profile if the user's profile has been stored.
+     */
+    $scope.init = function() {
+        if (!oauth2Provider.signedIn) {
+            var modalInstance = oauth2Provider.showLoginModal();
+            modalInstance.result.then($scope.retrieveProfileCallback);
+        } else {
+            $scope.retrieveProfileCallback();
+        }
+    };
+    /**
+     * Invokes the conference.saveProfile API.
+     *
+     */
+    $scope.saveProfile = function() {
+        $scope.submitted = true;
+        $scope.loading = true;
+        gapi.client.conference.saveProfile($scope.profile).
+        execute(function(resp) {
+            $scope.$apply(function() {
+                $scope.loading = false;
+                if (resp.error) {
+                    // The request has failed.
+                    var errorMessage = resp.error.message || '';
+                    $scope.messages = 'Failed to update a profile : ' + errorMessage;
+                    $scope.alertStatus = 'warning';
+                    $log.error($scope.messages + 'Profile : ' + JSON.stringify($scope.profile));
+                    if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
+                        oauth2Provider.showLoginModal();
+                        return;
                     }
-                });
+                } else {
+                    // The request has succeeded.
+                    $scope.messages = 'The profile has been updated';
+                    $scope.alertStatus = 'success';
+                    $scope.submitted = false;
+                    $scope.initialProfile = {
+                        displayName: $scope.profile.displayName,
+                        teeShirtSize: $scope.profile.teeShirtSize
+                    };
+                    $log.info($scope.messages + JSON.stringify(resp.result));
+                }
             });
-        };
-    });
-
+        });
+    };
+});
 /**
  * @ngdoc controller
  * @name CreateConferenceCtrl
@@ -147,114 +134,89 @@ conferenceApp.controllers.controller('MyProfileCtrl',
  * @description
  * A controller used for the Create conferences page.
  */
-conferenceApp.controllers.controller('CreateConferenceCtrl',
-    function($scope, $log, oauth2Provider, HTTP_ERRORS) {
-
-        /**
-         * The conference object being edited in the page.
-         * @type {{}|*}
-         */
-        $scope.conference = $scope.conference || {};
-
-        /**
-         * Holds the default values for the input candidates for city select.
-         * @type {string[]}
-         */
-        $scope.cities = [
-            'Chicago',
-            'London',
-            'Paris',
-            'San Francisco',
-            'Tokyo'
-        ];
-
-        /**
-         * Holds the default values for the input candidates for topics select.
-         * @type {string[]}
-         */
-        $scope.topics = [
-            'Medical Innovations',
-            'Programming Languages',
-            'Web Technologies',
-            'Movie Making',
-            'Health and Nutrition'
-        ];
-
-        /**
-         * Tests if the arugment is an integer and not negative.
-         * @returns {boolean} true if the argument is an integer, false otherwise.
-         */
-        $scope.isValidMaxAttendees = function() {
-            if (!$scope.conference.maxAttendees || $scope.conference.maxAttendees.length == 0) {
-                return true;
-            }
-            return /^[\d]+$/.test($scope.conference.maxAttendees) && $scope.conference.maxAttendees >= 0;
+conferenceApp.controllers.controller('CreateConferenceCtrl', function($scope, $log, oauth2Provider, HTTP_ERRORS) {
+    /**
+     * The conference object being edited in the page.
+     * @type {{}|*}
+     */
+    $scope.conference = $scope.conference || {};
+    /**
+     * Holds the default values for the input candidates for city select.
+     * @type {string[]}
+     */
+    $scope.cities = ['Chicago', 'London', 'Paris', 'San Francisco', 'Tokyo'];
+    /**
+     * Holds the default values for the input candidates for topics select.
+     * @type {string[]}
+     */
+    $scope.topics = ['Medical Innovations', 'Programming Languages', 'Web Technologies', 'Movie Making', 'Health and Nutrition'];
+    /**
+     * Tests if the arugment is an integer and not negative.
+     * @returns {boolean} true if the argument is an integer, false otherwise.
+     */
+    $scope.isValidMaxAttendees = function() {
+        if (!$scope.conference.maxAttendees || $scope.conference.maxAttendees.length == 0) {
+            return true;
         }
-
-        /**
-         * Tests if the conference.startDate and conference.endDate are valid.
-         * @returns {boolean} true if the dates are valid, false otherwise.
-         */
-        $scope.isValidDates = function() {
-            if (!$scope.conference.startDate && !$scope.conference.endDate) {
-                return true;
-            }
-            if ($scope.conference.startDate && !$scope.conference.endDate) {
-                return true;
-            }
-            return $scope.conference.startDate <= $scope.conference.endDate;
+        return /^[\d]+$/.test($scope.conference.maxAttendees) && $scope.conference.maxAttendees >= 0;
+    }
+    /**
+     * Tests if the conference.startDate and conference.endDate are valid.
+     * @returns {boolean} true if the dates are valid, false otherwise.
+     */
+    $scope.isValidDates = function() {
+        if (!$scope.conference.startDate && !$scope.conference.endDate) {
+            return true;
         }
-
-        /**
-         * Tests if $scope.conference is valid.
-         * @param conferenceForm the form object from the create_conferences.html page.
-         * @returns {boolean|*} true if valid, false otherwise.
-         */
-        $scope.isValidConference = function(conferenceForm) {
-            return !conferenceForm.$invalid &&
-                $scope.isValidMaxAttendees() &&
-                $scope.isValidDates();
+        if ($scope.conference.startDate && !$scope.conference.endDate) {
+            return true;
         }
-
-        /**
-         * Invokes the conference.createConference API.
-         *
-         * @param conferenceForm the form object.
-         */
-        $scope.createConference = function(conferenceForm) {
-            if (!$scope.isValidConference(conferenceForm)) {
-                return;
-            }
-
-            $scope.loading = true;
-            gapi.client.conference.createConference($scope.conference).
-            execute(function(resp) {
-                $scope.$apply(function() {
-                    $scope.loading = false;
-                    if (resp.error) {
-                        // The request has failed.
-                        var errorMessage = resp.error.message || '';
-                        $scope.messages = 'Failed to create a conference : ' + errorMessage;
-                        $scope.alertStatus = 'warning';
-                        $log.error($scope.messages + ' Conference : ' + JSON.stringify($scope.conference));
-
-                        if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
-                            oauth2Provider.showLoginModal();
-                            return;
-                        }
-                    } else {
-                        // The request has succeeded.
-                        $scope.messages = 'The conference has been created : ' + resp.result.name;
-                        $scope.alertStatus = 'success';
-                        $scope.submitted = false;
-                        $scope.conference = {};
-                        $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+        return $scope.conference.startDate <= $scope.conference.endDate;
+    }
+    /**
+     * Tests if $scope.conference is valid.
+     * @param conferenceForm the form object from the create_conferences.html page.
+     * @returns {boolean|*} true if valid, false otherwise.
+     */
+    $scope.isValidConference = function(conferenceForm) {
+        return !conferenceForm.$invalid && $scope.isValidMaxAttendees() && $scope.isValidDates();
+    }
+    /**
+     * Invokes the conference.createConference API.
+     *
+     * @param conferenceForm the form object.
+     */
+    $scope.createConference = function(conferenceForm) {
+        if (!$scope.isValidConference(conferenceForm)) {
+            return;
+        }
+        $scope.loading = true;
+        gapi.client.conference.createConference($scope.conference).
+        execute(function(resp) {
+            $scope.$apply(function() {
+                $scope.loading = false;
+                if (resp.error) {
+                    // The request has failed.
+                    var errorMessage = resp.error.message || '';
+                    $scope.messages = 'Failed to create a conference : ' + errorMessage;
+                    $scope.alertStatus = 'warning';
+                    $log.error($scope.messages + ' Conference : ' + JSON.stringify($scope.conference));
+                    if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
+                        oauth2Provider.showLoginModal();
+                        return;
                     }
-                });
+                } else {
+                    // The request has succeeded.
+                    $scope.messages = 'The conference has been created : ' + resp.result.name;
+                    $scope.alertStatus = 'success';
+                    $scope.submitted = false;
+                    $scope.conference = {};
+                    $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+                }
             });
-        };
-    });
-
+        });
+    };
+});
 /**
  * @ngdoc controller
  * @name ShowConferenceCtrl
@@ -263,21 +225,17 @@ conferenceApp.controllers.controller('CreateConferenceCtrl',
  * A controller used for the Show conferences page.
  */
 conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log, oauth2Provider, HTTP_ERRORS) {
-
     /**
      * Holds the status if the query is being executed.
      * @type {boolean}
      */
     $scope.submitted = false;
-
     $scope.selectedTab = 'ALL';
-
     /**
      * Holds the filters that will be applied when queryConferencesAll is invoked.
      * @type {Array}
      */
     $scope.filters = [];
-
     $scope.filtereableFields = [{
         enumValue: 'CITY',
         displayName: 'City'
@@ -291,7 +249,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
         enumValue: 'MAX_ATTENDEES',
         displayName: 'Max Attendees'
     }]
-
     /**
      * Possible operators.
      *
@@ -316,20 +273,17 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
         displayName: '!=',
         enumValue: 'NE'
     }];
-
     /**
      * Holds the conferences currently displayed in the page.
      * @type {Array}
      */
     $scope.conferences = [];
-
     /**
      * Holds the state if offcanvas is enabled.
      *
      * @type {boolean}
      */
     $scope.isOffcanvasEnabled = false;
-
     /**
      * Sets the selected tab to 'ALL'
      */
@@ -337,7 +291,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
         $scope.selectedTab = 'ALL';
         $scope.queryConferences();
     };
-
     /**
      * Sets the selected tab to 'YOU_HAVE_CREATED'
      */
@@ -349,7 +302,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
         }
         $scope.queryConferences();
     };
-
     /**
      * Sets the selected tab to 'YOU_WILL_ATTEND'
      */
@@ -361,14 +313,12 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
         }
         $scope.queryConferences();
     };
-
     /**
      * Toggles the status of the offcanvas.
      */
     $scope.toggleOffcanvas = function() {
         $scope.isOffcanvasEnabled = !$scope.isOffcanvasEnabled;
     };
-
     /**
      * Namespace for the pagination.
      * @type {{}|*}
@@ -384,7 +334,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
     $scope.pagination.numberOfPages = function() {
         return Math.ceil($scope.conferences.length / $scope.pagination.pageSize);
     };
-
     /**
      * Returns an array including the numbers from 1 to the number of the pages.
      *
@@ -398,7 +347,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
         }
         return pages;
     };
-
     /**
      * Checks if the target element that invokes the click event has the "disabled" class.
      *
@@ -408,7 +356,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
     $scope.pagination.isDisabled = function(event) {
         return angular.element(event.target).hasClass('disabled');
     }
-
     /**
      * Adds a filter and set the default value.
      */
@@ -419,14 +366,12 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
             value: ''
         })
     };
-
     /**
      * Clears all filters.
      */
     $scope.clearFilters = function() {
         $scope.filters = [];
     };
-
     /**
      * Removes the filter specified by the index from $scope.filters.
      *
@@ -437,7 +382,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
             $scope.filters.splice(index, 1);
         }
     };
-
     /**
      * Query the conferences depending on the tab currently selected.
      *
@@ -452,7 +396,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
             $scope.getConferencesAttend();
         }
     };
-
     /**
      * Invokes the conference.queryConferences API.
      */
@@ -487,7 +430,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
                     $scope.messages = 'Query succeeded : ' + JSON.stringify(sendFilters);
                     $scope.alertStatus = 'success';
                     $log.info($scope.messages);
-
                     $scope.conferences = [];
                     angular.forEach(resp.items, function(conference) {
                         $scope.conferences.push(conference);
@@ -497,7 +439,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
             });
         });
     }
-
     /**
      * Invokes the conference.getConferencesCreated method.
      */
@@ -513,7 +454,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
                     $scope.messages = 'Failed to query the conferences created : ' + errorMessage;
                     $scope.alertStatus = 'warning';
                     $log.error($scope.messages);
-
                     if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
                         oauth2Provider.showLoginModal();
                         return;
@@ -524,7 +464,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
                     $scope.messages = 'Query succeeded : Conferences you have created';
                     $scope.alertStatus = 'success';
                     $log.info($scope.messages);
-
                     $scope.conferences = [];
                     angular.forEach(resp.items, function(conference) {
                         $scope.conferences.push(conference);
@@ -534,7 +473,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
             });
         });
     };
-
     /**
      * Retrieves the conferences to attend by calling the conference.getProfile method and
      * invokes the conference.getConference method n times where n == the number of the conferences to attend.
@@ -550,7 +488,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
                     $scope.messages = 'Failed to query the conferences to attend : ' + errorMessage;
                     $scope.alertStatus = 'warning';
                     $log.error($scope.messages);
-
                     if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
                         oauth2Provider.showLoginModal();
                         return;
@@ -568,8 +505,6 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
         });
     };
 });
-
-
 /**
  * @ngdoc controller
  * @name ConferenceDetailCtrl
@@ -580,6 +515,7 @@ conferenceApp.controllers.controller('ShowConferenceCtrl', function($scope, $log
 function conferenceDetailCtrl($scope, $log, $routeParams, HTTP_ERRORS) {
     var vm = this;
     $scope.conference = {};
+    $scope.confsessions = [];
     $scope.isUserAttending = false;
     /**
      * Initializes the conference detail page.
@@ -606,7 +542,6 @@ function conferenceDetailCtrl($scope, $log, $routeParams, HTTP_ERRORS) {
                 }
             });
         });
-
         $scope.loading = true;
         // If the user is attending the conference, updates the status message and available function.
         gapi.client.conference.getProfile().execute(function(resp) {
@@ -617,7 +552,6 @@ function conferenceDetailCtrl($scope, $log, $routeParams, HTTP_ERRORS) {
                 } else {
                     var profile = resp.result;
                     if (profile && profile.conferenceKeysToAttend) {
-
                         for (var i = 0; i < profile.conferenceKeysToAttend.length; i++) {
                             if ($routeParams.websafeConferenceKey == profile.conferenceKeysToAttend[i]) {
                                 // The user is attending the conference.
@@ -627,13 +561,19 @@ function conferenceDetailCtrl($scope, $log, $routeParams, HTTP_ERRORS) {
                             }
                         }
                     }
-
                 }
             });
         });
+        gapi.client.conference.getConferenceSessions({
+            websafeConferenceKey: $routeParams.websafeConferenceKey
+        }).execute(function(resp) {
+            if (!resp.error) {
+                $scope.confsessions = resp.result.items;
+
+            }
+
+        });
     };
-
-
     /**
      * Invokes the conference.registerForConference method.
      */
@@ -650,7 +590,6 @@ function conferenceDetailCtrl($scope, $log, $routeParams, HTTP_ERRORS) {
                     $scope.messages = 'Failed to register for the conference : ' + errorMessage;
                     $scope.alertStatus = 'warning';
                     $log.error($scope.messages);
-
                     if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
                         oauth2Provider.showLoginModal();
                         return;
@@ -670,7 +609,6 @@ function conferenceDetailCtrl($scope, $log, $routeParams, HTTP_ERRORS) {
             });
         });
     };
-
     /**
      * Invokes the conference.unregisterForConference method.
      */
@@ -701,8 +639,7 @@ function conferenceDetailCtrl($scope, $log, $routeParams, HTTP_ERRORS) {
                         $log.info($scope.messages);
                     } else {
                         var errorMessage = resp.error.message || '';
-                        $scope.messages = 'Failed to unregister from the conference : ' + $routeParams.websafeKey +
-                            ' : ' + errorMessage;
+                        $scope.messages = 'Failed to unregister from the conference : ' + $routeParams.websafeKey + ' : ' + errorMessage;
                         $scope.messages = 'Failed to unregister from the conference';
                         $scope.alertStatus = 'warning';
                         $log.error($scope.messages);
@@ -712,8 +649,6 @@ function conferenceDetailCtrl($scope, $log, $routeParams, HTTP_ERRORS) {
         });
     };
 };
-
-
 /**
  * @ngdoc controller
  * @name RootCtrl
@@ -734,19 +669,15 @@ conferenceApp.controllers.controller('RootCtrl', function($scope, $location, oau
     $scope.isActive = function(viewLocation) {
         return viewLocation === $location.path();
     };
-
     /**
      * Returns the OAuth2 signedIn state.
      *
      * @returns {oauth2Provider.signedIn|*} true if siendIn, false otherwise.
      */
     $scope.getSignedInState = function() {
-        if (oauth2Provider.signedIn) {
-
-        }
+        if (oauth2Provider.signedIn) {}
         return oauth2Provider.signedIn;
     };
-
     /**
      * Calls the OAuth2 authentication method.
      */
@@ -763,7 +694,6 @@ conferenceApp.controllers.controller('RootCtrl', function($scope, $location, oau
             });
         });
     };
-
     /**
      * Render the signInButton and restore the credential if it's stored in the cookie.
      * (Just calling this to restore the credential from the stored cookie. So hiding the signInButton immediately
@@ -784,7 +714,6 @@ conferenceApp.controllers.controller('RootCtrl', function($scope, $location, oau
             'scope': oauth2Provider.SCOPES
         });
     };
-
     /**
      * Logs out the user.
      */
@@ -794,14 +723,12 @@ conferenceApp.controllers.controller('RootCtrl', function($scope, $location, oau
         $scope.alertStatus = 'success';
         $scope.rootMessages = 'Logged out';
     };
-
     /**
      * Collapses the navbar on mobile devices.
      */
     $scope.collapseNavbar = function() {
         angular.element(document.querySelector('.navbar-collapse')).removeClass('in');
     };
-
     $scope.retrieveProfileCallback = function() {
         $scope.profile = {};
         $scope.loading = true;
@@ -820,10 +747,7 @@ conferenceApp.controllers.controller('RootCtrl', function($scope, $location, oau
             });
         });
     };
-
 });
-
-
 /**
  * @ngdoc controller
  * @name OAuth2LoginModalCtrl
@@ -832,23 +756,20 @@ conferenceApp.controllers.controller('RootCtrl', function($scope, $location, oau
  * The controller for the modal dialog that is shown when an user needs to login to achive some functions.
  *
  */
-conferenceApp.controllers.controller('OAuth2LoginModalCtrl',
-    function($scope, $modalInstance, $rootScope, oauth2Provider) {
-        $scope.singInViaModal = function() {
-            oauth2Provider.signIn(function() {
-                gapi.client.oauth2.userinfo.get().execute(function(resp) {
-                    $scope.$root.$apply(function() {
-                        oauth2Provider.signedIn = true;
-                        $scope.$root.alertStatus = 'success';
-                        $scope.$root.rootMessages = 'Logged in with ' + resp.email;
-                    });
-
-                    $modalInstance.close();
+conferenceApp.controllers.controller('OAuth2LoginModalCtrl', function($scope, $modalInstance, $rootScope, oauth2Provider) {
+    $scope.singInViaModal = function() {
+        oauth2Provider.signIn(function() {
+            gapi.client.oauth2.userinfo.get().execute(function(resp) {
+                $scope.$root.$apply(function() {
+                    oauth2Provider.signedIn = true;
+                    $scope.$root.alertStatus = 'success';
+                    $scope.$root.rootMessages = 'Logged in with ' + resp.email;
                 });
+                $modalInstance.close();
             });
-        };
-    });
-
+        });
+    };
+});
 /**
  * @ngdoc controller
  * @name DatepickerCtrl
@@ -861,36 +782,29 @@ conferenceApp.controllers.controller('DatepickerCtrl', function($scope) {
         $scope.dt = new Date();
     };
     $scope.today();
-
     $scope.clear = function() {
         $scope.dt = null;
     };
-
     // Disable weekend selection
     $scope.disabled = function(date, mode) {
         return (mode === 'day' && (date.getDay() === 0 || date.getDay() === 6));
     };
-
     $scope.toggleMin = function() {
         $scope.minDate = ($scope.minDate) ? null : new Date();
     };
     $scope.toggleMin();
-
     $scope.open = function($event) {
         $event.preventDefault();
         $event.stopPropagation();
         $scope.opened = true;
     };
-
     $scope.dateOptions = {
         'year-format': "'yy'",
         'starting-day': 1
     };
-
     $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'shortDate'];
     $scope.format = $scope.formats[0];
 });
-
 /**
  * @ngdoc controller
  * @name CreateConferenceCtrl
@@ -901,16 +815,9 @@ conferenceApp.controllers.controller('DatepickerCtrl', function($scope) {
 conferenceApp.controllers.controller('RegisterSpeakerCtrl', registerSpeakerCtrl);
 registerSpeakerCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$timeout'];
 
-
-
-
 function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout) {
-
     var vm = this;
-
-
     vm.speakerExists = false;
-
     /**
      * The speaker object being edited in the page.
      * @type {{}|*}
@@ -920,16 +827,7 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
      * Holds the default values for the input candidates for topics select.
      * @type {string[]}
      */
-    vm.topics = [
-        'None',
-        'Host',
-        'Medical Innovations',
-        'Programming Languages',
-        'Web Technologies',
-        'Movie Making',
-        'Health and Nutrition'
-    ];
-
+    vm.topics = ['None', 'Host', 'Medical Innovations', 'Programming Languages', 'Web Technologies', 'Movie Making', 'Health and Nutrition'];
     /**
      * Tests if the arugment is not empty and min 10 characters long.
      * @returns {boolean} true if the argument is not empty an dmore than 10 characters.
@@ -941,7 +839,6 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
         }
         return result;
     }
-
     /**
      * Tests if the conference.startDate and conference.endDate are valid.
      * @returns {boolean} true if the dates are valid, false otherwise.
@@ -951,21 +848,16 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
         if (vm.speaker.topics && vm.speaker.topics.length >= 1) {
             result = true;
         }
-
         return result;
     }
-
     /**
      * Tests if $scope.conference is valid.
      * @param speakerForm the form object from the register_speaker.html page.
      * @returns {boolean|*} true if valid, false otherwise.
      */
     vm.isValidSpeaker = function(speakerForm) {
-        return !speakerForm.$invalid &&
-            vm.isValidAbout() &&
-            vm.isValidTopic();
+        return !speakerForm.$invalid && vm.isValidAbout() && vm.isValidTopic();
     }
-
     /**
      * Invokes the conference.createConference API.
      *
@@ -975,7 +867,6 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
         if (!vm.isValidSpeaker(speakerForm)) {
             return;
         }
-
         $scope.loading = true;
         gapi.client.conference.registerSpeaker(vm.speaker).
         execute(function(resp) {
@@ -987,7 +878,6 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
                     $scope.messages = 'Failed to register you as speaker : ' + errorMessage;
                     $scope.alertStatus = 'warning';
                     $log.error($scope.messages + ' Speaker : ' + JSON.stringify(vm.speaker));
-
                     if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
                         oauth2Provider.showLoginModal();
                         return;
@@ -1009,7 +899,6 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
      * @param none.
      */
     vm.initSpeaker = function() {
-
         $scope.loading = true;
         gapi.client.conference.speakerExists().
         execute(function(resp) {
@@ -1020,9 +909,7 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
                     /*The request has failed.
                     and it is not that the user is not regiseres
                     */
-
                     if (resp.code && resp.code != 409) {
-
                         var errorMessage = resp.error.message || '';
                         $scope.messages = 'Failed to verify speaker : ' + errorMessage;
                         $scope.alertStatus = 'warning';
@@ -1041,29 +928,19 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
                     } else {
                         /*the user is not registered show the form as usual*/
                     }
-
                 }
             });
         });
     };
     $timeout(function() {
         vm.initSpeaker();
-
     }, 100);
 }
-
 conferenceApp.controllers.controller('CreateConfSessionsCtrl', createConfSessionsCtrl);
 createConfSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$timeout', '$routeParams', '$filter'];
 
-
-
-
 function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout, $routeParams, $filter) {
-
     var vm = this;
-
-
-
     vm.hstep = 1;
     vm.mstep = 30;
     vm.ismeridian
@@ -1079,7 +956,6 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
         formatYear: 'yy',
         startingDay: 1
     };
-
     vm.formats = ['yyyy-MM-dd', 'dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
     vm.format = vm.formats[0];
     /**
@@ -1092,15 +968,7 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
      * Holds the default values for the input candidates for topics select.
      * @type {string[]}
      */
-    vm.topics = [
-        'NOT_SPECIFIED',
-        'WORKSHOP',
-        'LECTURE',
-        'THINKTANK',
-        'SKILLBUILDER',
-        'EXPERTSPEAK'
-    ];
-
+    vm.topics = ['NOT_SPECIFIED', 'WORKSHOP', 'LECTURE', 'THINKTANK', 'SKILLBUILDER', 'EXPERTSPEAK'];
     vm.getDateFromString = function(inputDate) {
         if (inputDate === null || inputDate === undefined) {
             return new Date();
@@ -1110,9 +978,7 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
         retVal.setFullYear(parseInt(dateParts[0], 10), (parseInt(dateParts[1], 10) - 1), parseInt(dateParts[2], 10));
         retVal.setHours(0, 0, 0, 0);
         return retVal;
-
     };
-
     /**
      * Tests if the arugment is not empty and min 10 characters long.
      * @returns {boolean} true if the argument is not empty an dmore than 10 characters.
@@ -1124,7 +990,6 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
         }
         return result;
     }
-
     /**
      * Tests if the conference.startDate and conference.endDate are valid.
      * @returns {boolean} true if the dates are valid, false otherwise.
@@ -1134,21 +999,16 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
         if (vm.speaker.topics && vm.speaker.topics.length >= 1) {
             result = true;
         }
-
         return result;
     }
-
     /**
      * Tests if $scope.conference is valid.
      * @param speakerForm the form object from the register_speaker.html page.
      * @returns {boolean|*} true if valid, false otherwise.
      */
     vm.isValidSpeaker = function(speakerForm) {
-        return !speakerForm.$invalid &&
-            vm.isValidAbout() &&
-            vm.isValidTopic();
+        return !speakerForm.$invalid && vm.isValidAbout() && vm.isValidTopic();
     }
-
     /**
      * Invokes the conference.createConference API.
      *
@@ -1158,7 +1018,6 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
         if (!vm.isValidSpeaker(speakerForm)) {
             return;
         }
-
         $scope.loading = true;
         gapi.client.conference.registerSpeaker(vm.speaker).
         execute(function(resp) {
@@ -1170,7 +1029,6 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
                     $scope.messages = 'Failed to register you as speaker : ' + errorMessage;
                     $scope.alertStatus = 'warning';
                     $log.error($scope.messages + ' Speaker : ' + JSON.stringify(vm.speaker));
-
                     if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
                         oauth2Provider.showLoginModal();
                         return;
@@ -1192,7 +1050,6 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
      * @param none.
      */
     vm.initSpeaker = function() {
-
         $scope.loading = true;
         gapi.client.conference.speakerExists().
         execute(function(resp) {
@@ -1218,7 +1075,6 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
                     } else {
                         /*the user is not registered show the form as usual*/
                     }
-
                 }
             });
         });
@@ -1236,16 +1092,10 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
         }
         return result;
     }
-
     vm.isValidConfSession = function(conferenceSessionForm) {
-        return !conferenceSessionForm.$invalid &&
-            vm.isValidDuration() &&
-            vm.isValidDate();
-
+        return !conferenceSessionForm.$invalid && vm.isValidDuration() && vm.isValidDate();
     }
-
     vm.init = function() {
-
         $scope.loading = true;
         gapi.client.conference.getConference({
             websafeConferenceKey: $routeParams.websafeConferenceKey
@@ -1270,12 +1120,9 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
                         $scope.messages = 'Only Conference Organizers can Create Sessions';
                         $scope.alertStatus = 'warning';
                     }
-
                 }
             });
         });
-
-
         gapi.client.conference.getAllSpeakers().execute(function(resp) {
             $scope.$apply(function() {
                 $scope.loading = false;
@@ -1287,20 +1134,15 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
                     $log.error($scope.messages);
                 } else {
                     vm.speakers = resp.result.items;
-
-
                 }
             });
         });
-
     }
-
     vm.formatFormObj = function(formObj) {
         formObj.speaker = formObj.speaker.websafeKey;
         formObj.start_time = $filter('date')(formObj.start_time, 'H:mm');
         return formObj;
     }
-
     vm.createConferenceSession = function(conferenceSessionForm) {
         if (!vm.isValidConfSession(conferenceSessionForm)) {
             return;
@@ -1329,29 +1171,18 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $time
                     } else {
                         /*the user is not registered show the form as usual*/
                     }
-
                 }
             });
         });
     }
-
-
-
-
 }
-
-
 /***
 ViewSpeakerCtrl is for the view speakers functionality
 ***/
 conferenceApp.controllers.controller('ViewSpeakerCtrl', ViewSpeakerCtrl);
 ViewSpeakerCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$timeout', '$routeParams', '$filter'];
 
-
-
-
 function ViewSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout, $routeParams, $filter) {
-
     var vm = this;
     vm.init = function() {
         $scope.loading = true;
@@ -1379,27 +1210,18 @@ function ViewSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout, $r
                         $scope.alertStatus = 'warning';
                         /*the user is not registered show the form as usual*/
                     }
-
                 }
             });
         });
-
     }
-
 }
-
-
 /***
 ViewSpeakerCtrl is for the view speakers functionality
 ***/
 conferenceApp.controllers.controller('ViewSpeakerSessionsCtrl', viewSpeakerSessionsCtrl);
 viewSpeakerSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$timeout', '$routeParams', '$filter'];
 
-
-
-
 function viewSpeakerSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout, $routeParams, $filter) {
-
     var vm = this;
     vm.init = function() {
         vm.speakerName = $routeParams.speakername
@@ -1413,11 +1235,9 @@ function viewSpeakerSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $tim
                 $scope.loading = false;
                 if (resp.error) {
                     // The request has failed.
-
                     var errorMessage = resp.error.message || '';
                     $scope.messages = 'No Sessions Found ';
                     $scope.alertStatus = 'warning';
-
                 } else {
                     if (resp.result.items && resp.result.items.length > 0) {
                         $scope.submitted = false;
@@ -1428,11 +1248,8 @@ function viewSpeakerSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $tim
                         $scope.alertStatus = 'warning';
                         /*the user is not registered show the form as usual*/
                     }
-
                 }
             });
         });
-
     }
-
 }

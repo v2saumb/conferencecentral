@@ -117,3 +117,22 @@ ul#conferences-list {
 .dropdown-menu > li.active > a{
     background-color:#0066cc;
 }
+.conf-sessions  .table-responsive{
+    max-height:360px;
+
+}
+.header-row{
+    background-color: #dddddd;
+    text-align: center;
+    font-weight: bold;
+}
+.row .session-list{
+    text-align: center;
+}
+.conf-sessions .row{
+    border-bottom: 1px #ddd solid;
+    padding:2px;
+}
+.conf-sessions .row:nth-child(odd){
+    background: #f9f9f9;
+}
