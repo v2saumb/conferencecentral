@@ -84,12 +84,19 @@
                                             <i class="fa fa fa-desktop fa-stack-1x"></i>
                                         </span> Sessions</a></li>
                                         <li class="nav-divider"></li>
-                                        <li ng-class="{ active: isActive('/profile')}" ng-click="collapseNavbar()"><a href="#/profile">  <span class="fa-stack ">
-                                            <i class="fa fa-square-o fa-stack-2x"></i>
-                                            <i class="fa fa fa-user fa-stack-1x"></i>
-                                        </span> My Profile</a></li>
                                       
-                                        
+                                    <li class="dropdown" ng-Class="{active: isActive('/profile')}">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                        <span class="fa-stack ">
+                                           <i class="fa fa-square-o fa-stack-2x"></i>
+                                            <i class="fa fa fa-user fa-stack-1x"></i>
+                                        </span> Profile<span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li ng-class="{ active: isActive('/profile')}" ng-click="collapseNavbar()"><a href="#/profile"><i class="fa fa-eye"></i> My Profile</a></li>
+                                                <li ng-class="{ active: isActive('/profile/session-wishlist')}" ng-click="collapseNavbar()"><a href="#/profile/session-wishlist">My Session Wishlist</a></li>
+                                                
+                                            </ul>
+                                        </li>
                                         <li class="nav-divider"></li>
                                     </ul>
                                     <ul class="nav navbar-nav navbar-right">

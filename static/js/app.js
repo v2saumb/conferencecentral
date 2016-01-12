@@ -31,6 +31,11 @@ config(['$routeProvider',
             templateUrl: '/partials/profile.html',
             controller: 'MyProfileCtrl'
         }).
+        when('/profile/session-wishlist', {
+            templateUrl: '/partials/view_sessions.html',
+            controller: 'SessionWishListCtrl',
+            controllerAs: "vm"
+        }).
         when('/speaker/register', {
             templateUrl: '/partials/register_speaker.html',
             controller: 'RegisterSpeakerCtrl',
@@ -47,7 +52,7 @@ config(['$routeProvider',
             controllerAs: 'vm'
         }).
         when('/speaker/:speakername/:websafeKey', {
-            templateUrl: '/partials/speaker_sessions.html',
+            templateUrl: '/partials/view_sessions.html',
             controller: 'ViewSpeakerSessionsCtrl',
             controllerAs: 'vm'
         }).

@@ -17,6 +17,12 @@ conferenceApp.controllers = angular.module('conferenceControllers', ['ui.bootstr
 /*Adding required Controllers*/
 conferenceApp.controllers.controller('ConferenceDetailCtrl', conferenceDetailCtrl);
 conferenceDetailCtrl.$inject = ['$scope', '$log', '$routeParams', 'HTTP_ERRORS'];
+
+conferenceApp.controllers.controller('ViewSpeakerSessionsCtrl', viewSpeakerSessionsCtrl);
+viewSpeakerSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$timeout', '$routeParams', '$filter'];
+
+conferenceApp.controllers.controller('SessionWishListCtrl', sessionWishListCtrl);
+sessionWishListCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$timeout', '$routeParams', '$filter'];
 /**
  * @ngdoc controller
  * @name MyProfileCtrl
@@ -1218,17 +1224,52 @@ function ViewSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout, $r
 /***
 ViewSpeakerCtrl is for the view speakers functionality
 ***/
-conferenceApp.controllers.controller('ViewSpeakerSessionsCtrl', viewSpeakerSessionsCtrl);
-viewSpeakerSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$timeout', '$routeParams', '$filter'];
+
 
 function viewSpeakerSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout, $routeParams, $filter) {
     var vm = this;
+
     vm.init = function() {
         vm.speakerName = $routeParams.speakername
         $scope.loading = true;
         gapi.client.conference.getSessionsBySpeaker({
             websafeKey: $routeParams.websafeKey
         }).
+        execute(function(resp) {
+            console.log(resp);
+            $scope.$apply(function() {
+                $scope.loading = false;
+                if (resp.error) {
+                    // The request has failed.
+                    var errorMessage = resp.error.message || '';
+                    $scope.messages = 'No Sessions Found ';
+                    $scope.alertStatus = 'warning';
+                } else {
+                    if (resp.result.items && resp.result.items.length > 0) {
+                        $scope.submitted = false;
+                        vm.speakerExists = true;
+                        vm.sessions = resp.result.items;
+                    } else {
+                        $scope.messages = 'No Records Found!';
+                        $scope.alertStatus = 'warning';
+                        /*the user is not registered show the form as usual*/
+                    }
+                }
+            });
+        });
+    }
+}
+
+
+
+
+function sessionWishListCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout, $routeParams, $filter) {
+    var vm = this;
+    vm.headingText = "Showing Session(s) in wishlist"
+    vm.sessions = [];
+    vm.init = function() {
+        $scope.loading = true;
+        gapi.client.conference.getSessionsInWishlist().
         execute(function(resp) {
             console.log(resp);
             $scope.$apply(function() {

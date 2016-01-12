@@ -126,7 +126,7 @@ ul#conferences-list {
     text-align: center;
     font-weight: bold;
 }
-.row .session-list{
+.row .session-list{s
     text-align: center;
 }
 .conf-sessions .row{
@@ -136,3 +136,11 @@ ul#conferences-list {
 .conf-sessions .row:nth-child(odd){
     background: #f9f9f9;
 }
+.collapsable_sessions{
+    position: absolute;
+    background-color: #fff;
+    padding: 10px;
+    box-shadow: 2px 2px 1px 1px #bbb;
+    width:350px;
+}
+

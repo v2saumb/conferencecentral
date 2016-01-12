@@ -10,25 +10,36 @@
         <div class="col-md-2">
             <label>Filter:</label>
         </div>
-        <div class="col-md-10 pull-left"><input type="text" ng-model="filterText" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 200, 'blur': 0 } }"/>
+        <div class="col-md-10 pull-left">
+            <input type="text" ng-model="filterText" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 200, 'blur': 0 } }"/>
+        </div>
     </div>
-</div>
-<div class="row header-row" ng-show="sessions.length > 0">
-    <div class="col-md-2" ng-if="showConfName">Conference</div>
-    <div  ng-class="{'col-md-4':!showConfName,'col-md-2':showConfName}">Name</div>
-    <div class="col-md-2" >Highlights</div>
-    <div  class="col-md-3" >Date / Time Duration</div>
-    <div class="col-md-1">Type</div>
-    <div class="col-md-2">Venue</div>
-</div>
-<div class="row session-list" ng-repeat="session in sessions| filter:filterText">
-    <div class="col-md-2" ng-if="showConfName" >{{session.confName}}</div>
-    <div ng-class="{'col-md-4':!showConfName ,'col-md-2':showConfName}">{{session.session_name}}</div>
-    <div class="col-md-2">{{session.highlights}}</div>
-    <div class="col-md-3"><p>Date: {{session.date}}</p>
-    <p>Time: {{session.start_time}}</p>
-    <p>Duration: {{session.duration}}</p></div>
-    <div class="col-md-1">{{session.type_of_session}}</div>
-    <div class="col-md-2">{{session.venue}}</div>
-</div>
+    <div class="row " ng-show="sessions.length > 0">
+        <table id="conference-table" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Session Details</th>
+                    <th>Date</th>
+                    <th>Time(24Hrs Format)</th>
+                    <th ng-if="showConfName">Conference</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th ng-if="showAddRemove">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="session in sessions| filter:filterText">
+                    <td ><collapsible-Item-Details item-type="SESSION" item="session"></collapsible-Item-Details></td>
+                    <td >{{session.date}}</td>
+                    <td >{{session.start_time}}</td>
+                    <td  ng-if="showConfName" >{{session.confName}}</td>
+                    <td >{{session.session_name}}</td>
+                    <td >{{session.type_of_session}}</td>
+                    <td ng-if="showAddRemove"><button type="button" class="btn btn-primary" ng-disabled="csCtrl.loading" ng-click="csCtrl.addSessionToWishlist(session.websafeKey)">Add to session </button></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        
+    </div>
 </div>
