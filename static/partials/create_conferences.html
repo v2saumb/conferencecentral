@@ -1,11 +1,6 @@
-<div ng-controller="CreateConferenceCtrl">
+<div >
     <div class="row">
         <div class="col-lg-12">
-            <div id="messages" class="alert alert-{{alertStatus}}" ng-show="messages">
-                <span ng-bind="messages"></span>
-                <i class="dismiss-messages pull-right glyphicon glyphicon-remove" ng-click="messages = ''"
-                   ng-show="messages"></i>
-            </div>
             <img class="spinner" src="/img/ajax-loader.gif" ng-show="loading"/>
         </div>
     </div>
@@ -45,13 +40,15 @@
 
                 <div class="form-group" ng-controller="DatepickerCtrl">
                     <label for="startDate">Start Date</label>
+                    <span class="label label-danger"
+                        ng-show="!isValidStartDate()">Start Date must be later or equal to today!</span>
                     <p class="input-group">
                         <input id="startDate" type="text" class="form-control" datepicker-popup="{{format}}"
                                ng-model="conference.startDate" is-open="opened"
                                datepicker-options="dateOptions"
                                close-text="Close"/>
                     <span class="input-group-btn">
-                        <button class="btn btn-default" ng-click="open($event)"><i
+                        <button class="btn btn-primary" ng-click="open($event)"><i
                                 class="glyphicon glyphicon-calendar"></i>
                         </button>
                     </span>
@@ -68,7 +65,7 @@
                                datepicker-options="dateOptions"
                                close-text="Close"/>
                     <span class="input-group-btn">
-                        <button class="btn btn-default" ng-click="open($event)"><i
+                        <button class="btn btn-primary" ng-click="open($event)"><i
                                 class="glyphicon glyphicon-calendar"></i>
                         </button>
                     </span>

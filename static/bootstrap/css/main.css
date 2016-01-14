@@ -105,18 +105,24 @@ ul#conferences-list {
     padding: 50px 0;
 }
 
-.dropdown-menu{
+.navbar-collapse .dropdown-menu{
     background-color:#007fff;
     color:#ffffff;
 }
 .dropdown-menu > li >a{
     color:#ffffff;
 }
+.navbar-collapse .dropdown-menu > li >a,
+.navbar-nav  > li >a{
+  transition: all ease-in 0.25s;
+}
 .dropdown-menu > li >a:hover,
 .dropdown-menu > li >a:focus,
 .dropdown-menu > li.active > a{
     background-color:#0066cc;
 }
+
+
 .conf-sessions  .table-responsive{
     max-height:360px;
 
@@ -137,10 +143,15 @@ ul#conferences-list {
     background: #f9f9f9;
 }
 .collapsable_sessions{
+    margin-top: 10px;
     position: absolute;
     background-color: #fff;
     padding: 10px;
     box-shadow: 2px 2px 1px 1px #bbb;
-    width:350px;
+    width: 350px;
+    border: 1px solid #ddd;
 }
 
+.toast-top-full-width{
+    top:61px !important;
+}

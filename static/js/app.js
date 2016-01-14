@@ -11,9 +11,9 @@
  * Root app, which routes and specifies the partial html and controller depending on the url requested.
  *
  */
-var app = angular.module('conferenceApp', ['ngAnimate', 'conferenceControllers', 'conferenceDirectives', 'ngRoute', 'ui.bootstrap']).
-config(['$routeProvider',
-    function($routeProvider) {
+var app = angular.module('conferenceApp', ['ngAnimate', 'toastr', 'conferenceControllers', 'conferenceDirectives', 'ngRoute', 'ui.bootstrap']).
+config(['$routeProvider', 'toastrConfig',
+    function($routeProvider, toastrConfig) {
         $routeProvider.
         when('/conference', {
             templateUrl: '/partials/show_conferences.html',
@@ -21,7 +21,8 @@ config(['$routeProvider',
         }).
         when('/conference/create', {
             templateUrl: '/partials/create_conferences.html',
-            controller: 'CreateConferenceCtrl'
+            controller: 'CreateConferenceCtrl',
+            controllerAs: 'vm'
         }).
         when('/conference/detail/:websafeConferenceKey', {
             templateUrl: '/partials/conference_detail.html',
@@ -56,6 +57,11 @@ config(['$routeProvider',
             controller: 'ViewSpeakerSessionsCtrl',
             controllerAs: 'vm'
         }).
+        when('/sessions', {
+            templateUrl: '/partials/view_all_sessions.html',
+            controller: 'ViewAllSessionsCtrl',
+            controllerAs: 'vm'
+        }).
         when('/conference/createsession/:websafeConferenceKey', {
             templateUrl: '/partials/create_session.html',
             controller: 'CreateConfSessionsCtrl',
@@ -66,6 +72,20 @@ config(['$routeProvider',
         }).
         otherwise({
             redirectTo: '/home'
+        });
+
+
+        angular.extend(toastrConfig, {
+            autoDismiss: false,
+            timeOut: 2000,
+            containerId: 'toast-container',
+            maxOpened: 1,
+            newestOnTop: true,
+            progressBar: true,
+            closeButton: true,
+            positionClass: 'toast-top-full-width',
+            target: 'body',
+            toastClas: 'toast-position'
         });
     }
 ]);

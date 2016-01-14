@@ -14,10 +14,10 @@ var conferenceApp = conferenceApp || {};
  * Angular module for controllers.
  *
  */
-conferenceApp.directives = angular.module('conferenceDirectives', ['ui.bootstrap']);
+conferenceApp.directives = angular.module('conferenceDirectives', ['ui.bootstrap', 'toastr']);
 
 conferenceApp.directives.directive('conferenceSessions', confSessionDir);
-confSessionCtrl.$inject = ['$rootScope', '$scope']
+confSessionCtrl.$inject = ['$scope', 'toastr']
 
 conferenceApp.directives.directive('collapsibleItemDetails', collapsibleItemDetails);
 collapsibleItemDetails.$inject = ['$timeout'];
@@ -29,7 +29,8 @@ function confSessionDir() {
         scope: {
             sessions: '=',
             showConfName: '@',
-            showAddRemove: '@'
+            showAddRemove: '@',
+            autoArchive: "="
         },
         replace: true,
         templateUrl: "/partials/directives/conf-sessions.html",
@@ -43,13 +44,13 @@ function confSessionDir() {
     function confSessionLink(scope, iElement, iAttrs) {}
 }
 
-function confSessionCtrl($rootScope, $scope) {
+function confSessionCtrl($scope, toastr) {
     $scope.filterText = "";
     var vm = this;
-    vm.addSessionToWishlist = function(wssk) {
+    vm.addSessionToWishlist = function(session) {
         vm.loading = true;
         gapi.client.conference.addSessionToWishlist({
-            websafeKey: wssk
+            websafeKey: session.websafeKey
         }).
         execute(function(resp) {
             $scope.$apply(function() {
@@ -57,19 +58,34 @@ function confSessionCtrl($rootScope, $scope) {
                 if (resp.error) {
                     if (resp.code && resp.code == 409) {
                         var errorMessage = resp.error.message || '';
-                        $scope.messages = 'Error:' + errorMessage;
-                        $scope.alertStatus = 'warning';
+                        toastr.error('Error:' + errorMessage);
                     }
                 } else {
-                    /*if (resp.result.items && resp.result.items.length > 0) {
-                        $scope.submitted = false;
-                        vm.speakerExists = true;
-                        vm.sessions = resp.result.items;
-                    } else {
-                        $scope.messages = 'No Records Found!';
-                        $scope.alertStatus = 'warning';
-                        
-                    }*/
+                    toastr.success("Session [ " + session.session_name + " ] added to your wishlist")
+                }
+            });
+        });
+    }
+
+    vm.deleteSessionInWishlist = function(session) {
+        vm.loading = true;
+        gapi.client.conference.deleteSessionInWishlist({
+            websafeKey: session.websafeKey
+        }).
+        execute(function(resp) {
+            $scope.$apply(function() {
+                vm.loading = false;
+                if (resp.error) {
+                    if (resp.code && resp.code == 409) {
+                        var errorMessage = resp.error.message || '';
+                        toastr.error('Error:' + errorMessage);
+                    }
+                } else {
+                    if ($scope.autoArchive) {
+                        toastr.success("Session [ " + session.session_name + " ] removed to your wishlist")
+                        $scope.sessions.pop(session);
+                    }
+
                 }
             });
         });

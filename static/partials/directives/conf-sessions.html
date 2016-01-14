@@ -24,7 +24,7 @@
                     <th ng-if="showConfName">Conference</th>
                     <th>Name</th>
                     <th>Type</th>
-                    <th ng-if="showAddRemove">Action</th>
+                    <th ng-if="showAddRemove">WishList</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,7 +35,7 @@
                     <td  ng-if="showConfName" >{{session.confName}}</td>
                     <td >{{session.session_name}}</td>
                     <td >{{session.type_of_session}}</td>
-                    <td ng-if="showAddRemove"><button type="button" class="btn btn-primary" ng-disabled="csCtrl.loading" ng-click="csCtrl.addSessionToWishlist(session.websafeKey)">Add to session </button></td>
+                    <td ng-if="showAddRemove"><button type="button" class="btn btn-primary" ng-disabled="csCtrl.loading" ng-click="csCtrl.addSessionToWishlist(session)"><i class="fa fa-plus"></i>  </button> <button type="button" class="btn btn-danger" ng-disabled="csCtrl.loading" ng-click="csCtrl.deleteSessionInWishlist(session)"><i class="fa fa-minus"></i>  </button></td>
                 </tr>
             </tbody>
         </table>

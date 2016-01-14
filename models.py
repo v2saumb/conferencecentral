@@ -18,12 +18,13 @@ from protorpc import messages
 from google.appengine.ext import ndb
 
 class SESSION_TYPE(messages.Enum):
-    NOT_SPECIFIED = 0
+    GENERAL = 0
     WORKSHOP = 1
     LECTURE = 2
     THINKTANK = 3
     SKILLBUILDER = 4
     EXPERTSPEAK = 5
+    KEYNOTE = 6
 
 class TeeShirtSize(messages.Enum):
     """TeeShirtSize -- t-shirt size enumeration value"""
@@ -56,7 +57,7 @@ class ConfSession(ndb.Model):
     highlights = ndb.StringProperty()
     speaker =  ndb.StringProperty()
     duration = ndb.IntegerProperty(default=30)
-    type_of_session = ndb.StringProperty(default="NOT_SPECIFIED")
+    type_of_session = ndb.StringProperty(default="General")
     date = ndb.DateProperty()
     start_time = ndb.TimeProperty()
     venue = ndb.StringProperty()

@@ -12,6 +12,7 @@
         <link rel="stylesheet" href="/css/main.css">
         <link rel="stylesheet" href="/css/animations.css">
         <link rel="stylesheet" href="/css/offcanvas.css">
+        <link rel="stylesheet" href="/css/angular-toastr.min.css">
         <link rel="shortcut icon" href="/img/favicon.ico">
         <meta property="og:title" content="Conference Central">
         <meta property="og:type" content="website">
@@ -66,34 +67,31 @@
                                         
                                     </ul>
                                 </li>
-                                <li class="dropdown" ng-Class="{active: isActive('/speaker/view')||isActive('/speaker/register')}">
+                                
+                                <li ng-class="{ active: isActive('/speaker/view')}" ng-click="collapseNavbar()"><a href="#/speaker/view"> <span class="fa-stack ">
+                                    <i class="fa fa-square-o fa-stack-2x"></i>
+                                    <i class="fa fa fa-bullhorn fa-stack-1x"></i>
+                                </span> Speakers</a></li>
+                                
+                                
+                                
+                                <li class="nav-divider"></li>
+                                <li ng-class="{ active: isActive('/sessions')}" ng-click="collapseNavbar()"><a href="#/sessions">  <span class="fa-stack ">
+                                    <i class="fa fa-square-o fa-stack-2x"></i>
+                                    <i class="fa fa fa-desktop fa-stack-1x"></i>
+                                </span> Sessions</a></li>
+                                <li class="nav-divider"></li>
+                                
+                                <li class="dropdown" ng-Class="{active: isActive('/profile') || isActive('/speaker/register') || isActive('/profile/session-wishlist')}">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                                         <span class="fa-stack ">
                                             <i class="fa fa-square-o fa-stack-2x"></i>
-                                            <i class="fa fa fa-bullhorn fa-stack-1x"></i>
-                                            </span> Speakers <span class="caret"></span></a>
-                                            <ul class="dropdown-menu">
-                                                <li ng-class="{ active: isActive('/speaker/view')}" ng-click="collapseNavbar()"><a href="#/speaker/view"><i class="fa fa-eye"></i> View Speakers</a></li>
-                                                <li ng-class="{ active: isActive('/speaker/register')}" ng-click="collapseNavbar()"><a href="#/speaker/register">Register Speaker</a></li>
-                                                
-                                            </ul>
-                                        </li>
-                                        <li class="nav-divider"></li>
-                                        <li ng-class="{ active: isActive('/sessions')}" ng-click="collapseNavbar()"><a href="#/sessions">  <span class="fa-stack ">
-                                            <i class="fa fa-square-o fa-stack-2x"></i>
-                                            <i class="fa fa fa-desktop fa-stack-1x"></i>
-                                        </span> Sessions</a></li>
-                                        <li class="nav-divider"></li>
-                                      
-                                    <li class="dropdown" ng-Class="{active: isActive('/profile')}">
-                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                                        <span class="fa-stack ">
-                                           <i class="fa fa-square-o fa-stack-2x"></i>
                                             <i class="fa fa fa-user fa-stack-1x"></i>
-                                        </span> Profile<span class="caret"></span></a>
+                                            </span> Profile<span class="caret"></span></a>
                                             <ul class="dropdown-menu">
                                                 <li ng-class="{ active: isActive('/profile')}" ng-click="collapseNavbar()"><a href="#/profile"><i class="fa fa-eye"></i> My Profile</a></li>
-                                                <li ng-class="{ active: isActive('/profile/session-wishlist')}" ng-click="collapseNavbar()"><a href="#/profile/session-wishlist">My Session Wishlist</a></li>
+                                                <li ng-class="{ active: isActive('/profile/session-wishlist')}" ng-click="collapseNavbar()"><a href="#/profile/session-wishlist">My Wishlist</a></li>
+                                                <li ng-class="{ active: isActive('/speaker/register')}" ng-click="collapseNavbar()"><a href="#/speaker/register">Register Speaker</a></li>
                                                 
                                             </ul>
                                         </li>
@@ -121,6 +119,7 @@
                         <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
                         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
                         <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+                        <script src="/js/angular-toastr.tpls.min.js"></script>
                         <script src="/js/app.js"></script>
                         <script src="/js/controllers.js"></script>
                         <script src="/js/directives.js"></script>

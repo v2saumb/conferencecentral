@@ -69,7 +69,7 @@ SESSION_DEFAULTS = {
     'highlights': '',
     'speaker':  '',
     'duration': 30,
-    'type_of_session': "NOT_SPECIFIED"
+    'type_of_session': "General"
 }
 
 OPERATORS = {
