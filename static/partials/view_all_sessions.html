@@ -9,5 +9,19 @@
             <h3>{{vm.headingText}}</h3>
         </div>
     </div>
-    <conference-sessions sessions="vm.sessions" show-Conf-Name="true" show-add-remove="true" auto-archive="vm.autoArchive"></conference-sessions>
-</div>
+    <div class="row session-selector">
+        <div class="col-md-2">Show Sessions For </div>
+        <div class="col-md-2">
+
+            <label for="Today">Today</label> <input type="radio" name='dateType' id="today" value="TODAY" ng-model="vm.dateType" id="Today" /></div>
+            <div class="col-md-2">
+                <label for="week">This Week</label> <input type="radio" name='dateType' id="" value="WEEK" ng-model="vm.dateType" id="week"/></div>
+                <div class="col-md-2">
+                    <label for="month">This Month</label> <input type="radio" name='dateType' value="MONTH" ng-model="vm.dateType" id="month" />
+                </div>
+                      <div class="col-md-2">
+                    <label for="year">This Year</label> <input type="radio" name='dateType' value="YEAR" ng-model="vm.dateType" id="month" />
+                </div>
+            </div>
+            <conference-sessions sessions="vm.sessions" show-Conf-Name="true" show-add-remove="true" auto-archive="vm.autoArchive"></conference-sessions>
+        </div>

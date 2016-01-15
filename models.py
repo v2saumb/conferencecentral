@@ -57,8 +57,8 @@ class ConfSession(ndb.Model):
     highlights = ndb.StringProperty()
     speaker =  ndb.StringProperty()
     duration = ndb.IntegerProperty(default=30)
-    type_of_session = ndb.StringProperty(default="General")
-    date = ndb.DateProperty()
+    type_of_session = ndb.StringProperty(default="GENERAL")
+    date = ndb.DateTimeProperty()
     start_time = ndb.TimeProperty()
     venue = ndb.StringProperty()
 
@@ -97,6 +97,14 @@ class ConfSessionForm(messages.Message):
     websafeKey = messages.StringField(8)
     venue = messages.StringField(9)
     confName=messages.StringField(10)
+#  conf sessions search form.
+class ConfSessionSearchForm(messages.Message):
+    start_date = messages.StringField(1,required=True)
+    end_date =  messages.StringField(2)
+    session_type = messages.StringField(3)
+    deltaMinutes = messages.StringField(4)
+
+
 # speaker form
 class SpeakerForm(messages.Message):
     """Speaker -- Speaker object"""

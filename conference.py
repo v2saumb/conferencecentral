@@ -13,7 +13,7 @@ Modified by v2saumb on 2016 Jan 04
 __author__ = 'v2saumb+api@gmail.com (Saumya Batnagar)'
 
 
-from datetime import datetime
+from datetime import tzinfo, timedelta, datetime
 
 import endpoints
 from protorpc import messages
@@ -39,7 +39,7 @@ from models import ConferenceQueryForms
 from models import BooleanMessage
 from models import ConflictException
 from models import Speaker, SpeakerForm, SpeakerForms, FindSpeakerForm
-from models import ConfSession, ConfSessionForm, ConfSessionForms
+from models import ConfSession, ConfSessionForm, ConfSessionForms, ConfSessionSearchForm
 from google.appengine.api.logservice import logservice
 
 # adding imports for memcache
@@ -115,7 +115,6 @@ WISHLIST_SESSION_POST_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeKey=messages.StringField(1),
 )
-
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -196,8 +195,8 @@ class ConferenceApi(remote.Service):
         \nStart Time:\t{4}
         \nCity:\t{5}
         \nVenue:\t{6}""".format(conf.name, session.session_name,
-                          session.duration, session.date, session.start_time,
-                          conf.city, session.venue)
+                                session.duration, session.date, session.start_time,
+                                conf.city, session.venue)
         logging.info(messageTxt)
         return messageTxt
 
@@ -267,7 +266,6 @@ class ConferenceApi(remote.Service):
                 for field in request.all_fields()}
         del data['websafeKey']
         del data['organizerDisplayName']
-        
 
         # add default values for those missing (both data model & outbound
         # Message)
@@ -484,6 +482,7 @@ class ConferenceApi(remote.Service):
         # write things back to the datastore & return
         prof.put()
         return BooleanMessage(data=retval)
+
     def _createConfSession(self, request):
         """Create or update Conference Session object, returning ConfSessionForm/request."""
         # preload necessary data items
@@ -526,16 +525,22 @@ class ConferenceApi(remote.Service):
                 setattr(request, df, SESSION_DEFAULTS[df])
 
         # convert dates from strings to Date objects; set month based on
+        # create time zone
         # start_date
         if data['date']:
             data['date'] = datetime.strptime(
                 data['date'][:10], "%Y-%m-%d").date()
+            logging.info(data['date'])
 
         # convert time
         if data['start_time']:
             data['start_time'] = datetime.strptime(
                 data['start_time'][:5], "%H:%M").time()
-
+            logging.info(data['start_time'])
+            # adding time to the date field the will help filter results later
+            combTime = datetime.combine(data['date'], data['start_time'])
+            logging.info(combTime)
+            data['date'] = combTime
 
         # convert session type
         if data['type_of_session']:
@@ -724,8 +729,56 @@ class ConferenceApi(remote.Service):
         sessions = ConfSession.query(ConfSession.speaker == speaker[0].key.urlsafe()).order(
             -ConfSession.date).order(ConfSession.start_time)
         return sessions
-    # register a user as speaker
 
+    def _getAllFutureSessions(self, request):
+        """ returns all future sessions """
+        strdate = request.start_date
+        strEndDate = request.end_date
+        if strdate:
+            startDate = datetime.combine(datetime.strptime(strdate[
+                                         :16], "%Y-%m-%d %H:%M").date(),
+                                         datetime.strptime(strdate[:16], "%Y-%m-%d %H:%M").time())
+        if strEndDate:
+            endDate = datetime.combine(datetime.strptime(strEndDate[
+                                         :16], "%Y-%m-%d %H:%M").date(),
+                                         datetime.strptime(strEndDate[:16], "%Y-%m-%d %H:%M").time())
+        else:
+            endDate = None;
+
+
+        sessions = ConfSession.query(
+            ConfSession.date > startDate).order(ConfSession.date)
+        if endDate:
+            sessions = sessions.filter(ConfSession.date <= endDate).order(ConfSession.date)
+
+
+        return sessions
+
+    def _getStartingSoonSessions(self,request):
+        """ return all session that are starting soon request
+        will have the delta to select the upper limit
+        """
+        strdate = request.start_date
+        
+        if strdate:
+            startDate = datetime.combine(datetime.strptime(strdate[
+                                         :16], "%Y-%m-%d %H:%M").date(),
+                                         datetime.strptime(strdate[:16], "%Y-%m-%d %H:%M").time())
+        else:
+            raise endpoints.BadRequestException("'startDate' field required")
+
+        endDate = startDate + timedelta(minutes=int(request.deltaMinutes))
+        logging.info(str(startDate) +" ,"  +str(endDate))
+        sessions = ConfSession.query(
+            ConfSession.date > startDate).order(ConfSession.date)
+        logging.info(str(sessions))
+        if endDate:
+            sessions = sessions.filter(ConfSession.date <= endDate).order(ConfSession.date)
+        return sessions
+
+    #  ------------------------------- Endpoints ---------------------
+
+    # register a user as speaker
     @endpoints.method(SpeakerForm, SpeakerForm, path='registerSpeaker',
                       http_method='POST', name='registerSpeaker')
     def registerSpeaker(self, request):
@@ -974,7 +1027,7 @@ class ConferenceApi(remote.Service):
     def addSessionToWishlist(self, request):
         """Add a sessions to users wishlist."""
         logging.info('in add session to wishlist')
-        return self._manageSessionWishList(request,True)
+        return self._manageSessionWishList(request, True)
 
     @endpoints.method(WISHLIST_SESSION_POST_REQUEST, BooleanMessage,
                       path='session/deletefromwishlist/{websafeKey}',
@@ -982,7 +1035,7 @@ class ConferenceApi(remote.Service):
     def deleteSessionInWishlist(self, request):
         """Removes a sessions from users wishlist."""
         logging.info('in add session to wishlist')
-        return self._manageSessionWishList(request,False)
+        return self._manageSessionWishList(request, False)
 
     @endpoints.method(message_types.VoidMessage, ConfSessionForms,
                       path='sessionwishList',
@@ -991,13 +1044,35 @@ class ConferenceApi(remote.Service):
         """Removes a sessions from users wishlist."""
         prof = self._getProfileFromUser()
         list_of_sessions = list(ndb.Key(urlsafe=wsck)
-                             for wsck in prof.sessionWishList)
+                                for wsck in prof.sessionWishList)
         sessions = ndb.get_multi(list_of_sessions)
         # return set of ConferenceForm objects per Conference
         return ConfSessionForms(
             items=[self._copyConfSessionToForm(
                 session) for session in sessions]
         )
-       
+
+    @endpoints.method(ConfSessionSearchForm, ConfSessionForms,
+                      path='sessions/future',
+                      http_method='GET', name='getAllFutureSessions')
+    def getAllFutureSessions(self, request):
+        """retrives session based on a date."""
+        sessions = self._getAllFutureSessions(request)
+        # return set of ConferenceForm objects per Conference
+        return ConfSessionForms(
+            items=[self._copyConfSessionToForm(
+                session) for session in sessions]
+        )
+    @endpoints.method(ConfSessionSearchForm, ConfSessionForms,
+                      path='sessions/startingsoon',
+                      http_method='GET', name='getSessionsStartingSoon')
+    def getSessionsStartingSoon(self, request):
+        """Gets all the sessions starting within a specified time delta."""
+        sessions = self._getStartingSoonSessions(request)
+        # return set of ConferenceForm objects per Conference
+        return ConfSessionForms(
+            items=[self._copyConfSessionToForm(
+                session) for session in sessions]
+        )
 # registers API
 api = endpoints.api_server([ConferenceApi])

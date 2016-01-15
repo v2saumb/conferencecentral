@@ -12,6 +12,12 @@ indexes:
 
 - kind: ConfSession
   properties:
+  - name: date
+    direction: desc
+  - name: start_time
+
+- kind: ConfSession
+  properties:
   - name: speaker
   - name: date
     direction: desc

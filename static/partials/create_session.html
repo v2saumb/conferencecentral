@@ -94,11 +94,20 @@
                         </div>
                     </div>
                 </div>
-                <button ng-click="vm.createConferenceSession(conferenceSessionForm)" class="btn btn-primary"
-                ng-disabled="!vm.isValidConfSession(conferenceSessionForm) || loading ">Create
-                </button><p ng-bind="messages"></p>
-
-            </form>
+                <div class="row">
+                    <div class="col-md-2 ">   <button ng-click="vm.goBack()" class="btn btn-success"
+                        ng-disabled="loading "> <i class="fa fa-caret-left"></i> Back
+                    </button></div>
+                    <div class="col-md-2"><button ng-click="vm.createConferenceSession(conferenceSessionForm)" class="btn btn-primary"
+                        ng-disabled="!vm.isValidConfSession(conferenceSessionForm) || loading ">Create
+                    </button></div>
+                    
+                    <div class="col-md-8"></div>
+                    
+                </div>
+            </div>
             
-        </div>
+        </form>
+        
     </div>
+</div>

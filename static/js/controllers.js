@@ -25,7 +25,7 @@ conferenceApp.controllers.controller('SessionWishListCtrl', sessionWishListCtrl)
 sessionWishListCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$routeParams', 'toastr'];
 
 conferenceApp.controllers.controller('ViewAllSessionsCtrl', viewAllSessionsCtrl);
-viewAllSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$routeParams', 'toastr'];
+viewAllSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$routeParams', 'toastr', '$filter'];
 
 conferenceApp.controllers.controller('CreateConferenceCtrl', createConferenceCtrl);
 createConferenceCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', 'toastr'];
@@ -37,7 +37,7 @@ conferenceApp.controllers.controller('RegisterSpeakerCtrl', registerSpeakerCtrl)
 registerSpeakerCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$timeout', 'toastr'];
 
 conferenceApp.controllers.controller('CreateConfSessionsCtrl', createConfSessionsCtrl);
-createConfSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$routeParams', 'toastr'];
+createConfSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$routeParams', 'toastr', '$filter'];
 
 conferenceApp.controllers.controller('ViewSpeakerCtrl', ViewSpeakerCtrl);
 ViewSpeakerCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$routeParams', 'toastr'];
@@ -170,6 +170,10 @@ function myProfileCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr) {
  */
 
 function createConferenceCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr) {
+    var vm = this;
+    vm.goBack = function() {
+        window.history.back();
+    }
     /**
      * The conference object being edited in the page.
      * @type {{}|*}
@@ -203,7 +207,6 @@ function createConferenceCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr)
         if (!$scope.conference.startDate) {
             return true;
         }
-        console.log(today <= $scope.conference.startDate.setHours(0, 0, 0, 0))
         return today <= $scope.conference.startDate.setHours(0, 0, 0, 0);
     }
     /**
@@ -956,7 +959,7 @@ function registerSpeakerCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $timeout
 }
 
 
-function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routeParams, toastr) {
+function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routeParams, toastr, $filter) {
     var vm = this;
     vm.hstep = 1;
     vm.mstep = 30;
@@ -1007,6 +1010,10 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $rout
         'value': 'KEYNOTE',
         'text': 'Keynote'
     }];
+
+    vm.goBack = function() {
+        window.history.back();
+    }
     vm.getDateFromString = function(inputDate) {
         if (inputDate === null || inputDate === undefined) {
             return new Date();
@@ -1309,15 +1316,54 @@ function sessionWishListCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routePa
     }
 }
 
-function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routeParams, toastr) {
+function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routeParams, toastr, $filter) {
     var vm = this;
     vm.headingText = "Showing All Session(s)"
     vm.sessions = [];
     vm.autoArchive = true;
+    vm.endDate = null;
+    vm.dateType = "TODAY"
+    vm.endDate = moment().format("YYYY-MM-DD");
+    vm.endDate = "" + vm.endDate + " 23:59";
+    vm.endDate = moment(vm.endDate, "YYYY-MM-DD HH:mm");
+    $scope.$watch(function() {
+        console.log('value changes ')
+        return vm.dateType;
+    }, function(newVal, oldVal) {
+        if (newVal !== oldVal && newVal) {
+            var date_d = moment();
+            console.log(newVal);
+            if (newVal === "WEEK") {
+                date_d.add(7, 'days')
+            } else if (newVal === "MONTH") {
+                date_d.add(1, 'months')
+            } else if (newVal === "YEAR") {
+                date_d.add(1, 'years')
+            } else if (newVal === "TODAY") {
+                date_d = moment().format("YYYY-MM-DD");
+                date_d = "" + date_d + " 23:59";
+                date_d = moment(date_d, "YYYY-MM-DD HH:mm");
+            }
+            vm.endDate = date_d.format("YYYY-MM-DD HH:mm");
+            vm.init();
+        }
+    });
     vm.init = function() {
         $scope.loading = true;
-        gapi.client.conference.getSessionsInWishlist().
-        execute(function(resp) {
+        vm.endDate = moment().format("YYYY-MM-DD");
+        vm.endDate = "" + vm.endDate + " 23:59";
+        vm.endDate = moment(vm.endDate, "YYYY-MM-DD HH:mm");
+        vm.startDate = $filter('date')(new Date(), 'yyyy-MM-dd H:mm');
+        var reqobj = {
+            start_date: vm.startDate
+
+        }
+        if (vm.endDate) {
+            reqobj.end_date = vm.endDate;
+
+        }
+
+        gapi.client.conference.getAllFutureSessions(reqobj).execute(function(resp) {
             console.log(resp);
             $scope.$apply(function() {
                 $scope.loading = false;

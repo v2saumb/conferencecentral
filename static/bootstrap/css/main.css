@@ -155,3 +155,8 @@ ul#conferences-list {
 .toast-top-full-width{
     top:61px !important;
 }
+.session-selector{
+    background-color: #eee;
+    padding:5px;
+    margin-bottom: 10px;
+}
