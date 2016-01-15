@@ -1323,9 +1323,7 @@ function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routePa
     vm.autoArchive = true;
     vm.endDate = null;
     vm.dateType = "TODAY"
-    vm.endDate = moment().format("YYYY-MM-DD");
-    vm.endDate = "" + vm.endDate + " 23:59";
-    vm.endDate = moment(vm.endDate, "YYYY-MM-DD HH:mm");
+
     $scope.$watch(function() {
         console.log('value changes ')
         return vm.dateType;
@@ -1350,9 +1348,14 @@ function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routePa
     });
     vm.init = function() {
         $scope.loading = true;
-        vm.endDate = moment().format("YYYY-MM-DD");
-        vm.endDate = "" + vm.endDate + " 23:59";
-        vm.endDate = moment(vm.endDate, "YYYY-MM-DD HH:mm");
+        if (!vm.endDate) {
+            var date_d = moment();
+            date_d = moment().format("YYYY-MM-DD");
+            date_d = "" + date_d + " 23:59";
+            date_d = moment(date_d, "YYYY-MM-DD HH:mm");
+            vm.endDate = date_d.format("YYYY-MM-DD HH:mm");
+
+        }
         vm.startDate = $filter('date')(new Date(), 'yyyy-MM-dd H:mm');
         var reqobj = {
             start_date: vm.startDate
@@ -1378,6 +1381,7 @@ function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routePa
                         vm.sessions = resp.result.items;
                     } else {
                         toastr.warning('No Records Found!');
+                        vm.sessions = [];
                         /*the user is not registered show the form as usual*/
                     }
                 }
