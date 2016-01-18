@@ -17,7 +17,9 @@ import endpoints
 from protorpc import messages
 from google.appengine.ext import ndb
 
+
 class SESSION_TYPE(messages.Enum):
+    """ENUM for Conference session type"""
     GENERAL = 0
     WORKSHOP = 1
     LECTURE = 2
@@ -25,6 +27,7 @@ class SESSION_TYPE(messages.Enum):
     SKILLBUILDER = 4
     EXPERTSPEAK = 5
     KEYNOTE = 6
+
 
 class TeeShirtSize(messages.Enum):
     """TeeShirtSize -- t-shirt size enumeration value"""
@@ -44,25 +47,31 @@ class TeeShirtSize(messages.Enum):
     XXXL_M = 14
     XXXL_W = 15
 
-# creating entity for speaker
+
+class StringMessage(messages.Message):
+    """StringMessage-- outbound (single) string message"""
+    data = messages.StringField(1, required=True)
+
+
 class Speaker(ndb.Model):
     """Speaker -- Speaker object"""
     speakerUserId = ndb.StringProperty()
     topics = ndb.StringProperty(repeated=True)
     aboutSpeaker = ndb.StringProperty()
 
-# entity for Session
+
 class ConfSession(ndb.Model):
+    """ Entity for the conference sessions """
     session_name = ndb.StringProperty(required=True)
     highlights = ndb.StringProperty()
-    speaker =  ndb.StringProperty()
+    speaker = ndb.StringProperty()
     duration = ndb.IntegerProperty(default=30)
     type_of_session = ndb.StringProperty(default="GENERAL")
     date = ndb.DateTimeProperty()
     start_time = ndb.TimeProperty()
     venue = ndb.StringProperty()
 
-# Entity for Conference
+
 class Conference(ndb.Model):
     """Conference -- Conference object"""
     name = ndb.StringProperty(required=True)
@@ -76,7 +85,7 @@ class Conference(ndb.Model):
     maxAttendees = ndb.IntegerProperty()
     seatsAvailable = ndb.IntegerProperty()
 
-# Entity for Profile
+
 class Profile(ndb.Model):
     """Profile -- User profile object"""
     displayName = ndb.StringProperty()
@@ -85,35 +94,49 @@ class Profile(ndb.Model):
     conferenceKeysToAttend = ndb.StringProperty(repeated=True)
     sessionWishList = ndb.StringProperty(repeated=True)
 
-# conference session Form
+
 class ConfSessionForm(messages.Message):
+"""Session Form for inbound and outboud conferene sessions"""
     session_name = messages.StringField(1)
     highlights = messages.StringField(2)
-    speaker =  messages.StringField(3)
+    speaker = messages.StringField(3)
     duration = messages.IntegerField(4)
-    type_of_session = messages.EnumField('SESSION_TYPE',5)
+    type_of_session = messages.EnumField('SESSION_TYPE', 5)
     date = messages.StringField(6)
     start_time = messages.StringField(7)
     websafeKey = messages.StringField(8)
     venue = messages.StringField(9)
-    confName=messages.StringField(10)
-#  conf sessions search form.
+    confName = messages.StringField(10)
+
+
 class ConfSessionSearchForm(messages.Message):
-    start_date = messages.StringField(1,required=True)
-    end_date =  messages.StringField(2)
+""" Sessions search form."""
+    start_date = messages.StringField(1, required=True)
+    end_date = messages.StringField(2)
     session_type = messages.StringField(3)
     deltaMinutes = messages.StringField(4)
 
 
-# speaker form
+class ConfSessionTask3SearchForm(messages.Message):
+""" Sessions search form for the problem in Task 3."""
+    start_time = messages.StringField(1, required=True)
+    session_type = messages.StringField(2, required=True)
+
+
+class FeaturedSpeakerForm(messages.Message):
+"""Form to return featured speaker"""
+    confName = messages.StringField(1)
+    speakerName = messages.StringField(2)
+    sessions = messages.StringField(3, repeated=True)
+
+
 class SpeakerForm(messages.Message):
     """Speaker -- Speaker object"""
     speakerUserId = messages.StringField(1)
-    topics = messages.StringField(2,repeated=True)
+    topics = messages.StringField(2, repeated=True)
     aboutSpeaker = messages.StringField(3)
     displayName = messages.StringField(4)
     websafeKey = messages.StringField(5)
-
 
 
 class FindSpeakerForm(messages.Message):
@@ -121,11 +144,15 @@ class FindSpeakerForm(messages.Message):
     websafeKey = messages.StringField(2)
 
 # Allows to return multiple Speakers
+
+
 class SpeakerForms(messages.Message):
     """SpeakerForm -- multiple SpeakerForm outbound form message"""
     items = messages.MessageField(SpeakerForm, 1, repeated=True)
 
 # return multiple sessions
+
+
 class ConfSessionForms(messages.Message):
     """ConfSesionForms -- multiple Conference session outbound form message"""
     items = messages.MessageField(ConfSessionForm, 1, repeated=True)
@@ -145,7 +172,6 @@ class ConferenceForm(messages.Message):
     endDate = messages.StringField(10)  # DateTimeField()
     websafeKey = messages.StringField(11)
     organizerDisplayName = messages.StringField(12)
-    
 
 
 class ProfileMiniForm(messages.Message):
@@ -153,13 +179,15 @@ class ProfileMiniForm(messages.Message):
     displayName = messages.StringField(1)
     teeShirtSize = messages.EnumField('TeeShirtSize', 2)
 
+
 class ProfileForm(messages.Message):
     """ProfileForm -- Profile outbound form message"""
     displayName = messages.StringField(1)
     mainEmail = messages.StringField(2)
     teeShirtSize = messages.EnumField('TeeShirtSize', 3)
-    conferenceKeysToAttend = messages.StringField(4,repeated=True)
-    sessionWishList = messages.StringField(5,repeated=True)
+    conferenceKeysToAttend = messages.StringField(4, repeated=True)
+    sessionWishList = messages.StringField(5, repeated=True)
+
 
 class ConferenceForms(messages.Message):
     """ConferenceForms -- multiple Conference outbound form message"""
@@ -173,6 +201,8 @@ class ConferenceQueryForm(messages.Message):
     value = messages.StringField(3)
 
 #  form for passing multiple query filters
+
+
 class ConferenceQueryForms(messages.Message):
     """ConferenceQueryForms -- multiple ConferenceQueryForm inbound form message"""
     filters = messages.MessageField(ConferenceQueryForm, 1, repeated=True)
@@ -183,11 +213,7 @@ class BooleanMessage(messages.Message):
     """BooleanMessage-- outbound Boolean value message"""
     data = messages.BooleanField(1)
 
+
 class ConflictException(endpoints.ServiceException):
     """ConflictException -- exception mapped to HTTP 409 response"""
     http_status = httplib.CONFLICT
-    
-# adding string message for the announcements
-class StringMessage(messages.Message):
-    """StringMessage-- outbound (single) string message"""
-    data = messages.StringField(1, required=True)

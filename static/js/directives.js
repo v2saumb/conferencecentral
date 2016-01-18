@@ -23,6 +23,9 @@ conferenceApp.directives.directive('collapsibleItemDetails', collapsibleItemDeta
 collapsibleItemDetails.$inject = ['$timeout'];
 collapsableCtrl.$inject = ['$scope']
 
+conferenceApp.directives.directive('userNameDisplay', userNameDisplayDir);
+
+
 function confSessionDir() {
     var dir = {
         restrict: 'E',
@@ -30,7 +33,10 @@ function confSessionDir() {
             sessions: '=',
             showConfName: '@',
             showAddRemove: '@',
+            showFilter: '@',
+            showDetails: '@',
             autoArchive: "="
+
         },
         replace: true,
         templateUrl: "/partials/directives/conf-sessions.html",
@@ -41,10 +47,21 @@ function confSessionDir() {
     };
     return dir;
 
-    function confSessionLink(scope, iElement, iAttrs) {}
+    function confSessionLink(scope, iElement, iAttrs) {
+        if (!iAttrs.showFilter) {
+            scope.showFilter = "true"
+        }
+        if (!iAttrs.showAddRemove) {
+            scope.showAddRemove = "true"
+        }
+        if (!iAttrs.showDetails) {
+            scope.showDetails = "true"
+        }
+    }
 }
 
 function confSessionCtrl($scope, toastr) {
+
     $scope.filterText = "";
     var vm = this;
     vm.addSessionToWishlist = function(session) {
@@ -178,3 +195,32 @@ function collapsableCtrl($scope) {
 
     };
 };
+
+
+function userNameDisplayDir() {
+    var directive = {
+        ristrict: "E",
+        scope: {
+            displayName: "="
+        },
+        replase: true,
+        link: undLink,
+        template: "<div class='user-name-display'><span class='user-name-circle' ng-bind='firstChar'></span><span class='user-name' ng-bind='displayName'></span></div>"
+
+
+    };
+    return directive;
+
+    function undLink(scope, iElement, iAttrs, ctrl) {
+        scope.getFirstChar = function() {
+            if (scope.displayName) {
+                scope.firstChar = scope.displayName.substr(0, 1).toUpperCase();
+            }
+        }
+        scope.$watch('displayName', function(newVal, oldVal) {
+            if (newVal !== oldVal) {
+                scope.getFirstChar();
+            }
+        });
+    }
+}

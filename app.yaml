@@ -38,6 +38,11 @@ handlers:       # static then dynamic
   script: main.app
   login: admin
 
+
+- url: /crons/set_starting_soon
+  script: main.app
+  login: admin
+
 - url: /tasks/sendemail/createconference
   script: main.app
   login: admin
@@ -47,6 +52,10 @@ handlers:       # static then dynamic
   login: admin
 
 - url: /tasks/sendemail/speakersessioncreated
+  script: main.app
+  login: admin
+
+- url: /tasks/setfeaturedspeaker
   script: main.app
   login: admin
 

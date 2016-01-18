@@ -45,7 +45,7 @@
                         <span class="label label-danger"
                         ng-show="!vm.isValidDate()">Date outside conference date!</span>
                         <p class="input-group">
-                            <input id="date" type="text" class="form-control" datepicker-popup="{{vm.format}}"
+                            <input id="date" type="text" class="form-control" uib-datepicker-popup="{{vm.format}}"
                             ng-model="vm.confSession.date" is-open="vm.opened"
                             min-date="minDate" max-date="maxDate" datepicker-options="vm.dateOptions" date-disabled="vm.disabled(date, mode)"
                             close-text="Close"/>
@@ -79,7 +79,7 @@
                 <div class="col-md-4">
                     <div class="form-group" >
                         <label for="start_time">Start Time (24Hrs Format)</label>
-                        <timepicker class="time-picker" name="start_time" id="start_time" ng-model="vm.confSession.start_time" ng-change="changed()" hour-step="vm.hstep" minute-step="vm.mstep" show-meridian="vm.ismeridian"></timepicker>
+                        <uib-timepicker class="time-picker" name="start_time" id="start_time" ng-model="vm.confSession.start_time" ng-change="changed()" hour-step="vm.hstep" minute-step="vm.mstep" show-meridian="vm.ismeridian"></uib-timepicker>
                     </div></div>
                     
                 </div>

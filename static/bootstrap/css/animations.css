@@ -28,3 +28,14 @@
 .animated-view.ng-leave.ng-leave-active {
   left:-100%;
 }
+.animate-show {
+  opacity: 1;
+}
+
+.animate-show.ng-hide-add, .animate-show.ng-hide-remove {
+  transition: all linear 0.5s;
+}
+
+.animate-show.ng-hide {
+  opacity: 0;
+}

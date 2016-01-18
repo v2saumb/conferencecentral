@@ -14,32 +14,28 @@ __author__ = 'v2saumb+api@gmail.com (Saumya Batnagar)'
 
 
 from datetime import tzinfo, timedelta, datetime
+from time import gmtime, strftime
 
 import endpoints
 from protorpc import messages
 from protorpc import message_types
 from protorpc import remote
 import logging
-from google.appengine.ext import ndb
-
-from models import Profile
-from models import ProfileMiniForm
-from models import ProfileForm
-from models import TeeShirtSize, SESSION_TYPE
-
-
-from utils import getUserId
 
 from settings import WEB_CLIENT_ID
-from models import Conference
-from models import ConferenceForm
-from models import ConferenceForms
-from models import ConferenceQueryForm
-from models import ConferenceQueryForms
+from models import Profile, ProfileMiniForm, ProfileForm
+from models import TeeShirtSize, SESSION_TYPE
+from models import Conference, ConferenceForm, ConferenceForms
+from models import ConferenceQueryForm, ConferenceQueryForms
 from models import BooleanMessage
 from models import ConflictException
-from models import Speaker, SpeakerForm, SpeakerForms, FindSpeakerForm
-from models import ConfSession, ConfSessionForm, ConfSessionForms, ConfSessionSearchForm
+from models import Speaker, SpeakerForm, SpeakerForms, FindSpeakerForm, FeaturedSpeakerForm
+from models import ConfSession, ConfSessionForm, ConfSessionForms
+from models import ConfSessionSearchForm, ConfSessionTask3SearchForm
+from utils import getUserId
+
+from google.appengine.ext import ndb
+# adding the log service import
 from google.appengine.api.logservice import logservice
 
 # adding imports for memcache
@@ -51,6 +47,12 @@ from google.appengine.api import taskqueue
 EMAIL_SCOPE = endpoints.EMAIL_SCOPE
 API_EXPLORER_CLIENT_ID = endpoints.API_EXPLORER_CLIENT_ID
 MEMCACHE_ANNOUNCEMENTS_KEY = "LIMITED-SEATS-AVAILABLE"
+# key for putting the sessions starting soon in the memcache
+MEMCACHE_STARTING_SOON_KEY = "SESSIONS-STARTING-SOON"
+# key for putting the sessions starting soon in the memcache
+MEMCACHE_FEATURED_SPEAKERS = "FEATURED_SPEAKER"
+# time delta for sessions starting soon in minutes
+STARTING_SOON_INTERVAL = 30
 
 # default values for conf object
 DEFAULTS = {
@@ -71,7 +73,7 @@ SESSION_DEFAULTS = {
     'duration': 30,
     'type_of_session': "General"
 }
-
+# operators for the query filters for Conferences
 OPERATORS = {
     'EQ':   '=',
     'GT':   '>',
@@ -80,37 +82,44 @@ OPERATORS = {
     'LTEQ': '<=',
     'NE':   '!='
 }
-
+# field names for the query filters for conferences
 FIELDS = {
     'CITY': 'city',
     'TOPIC': 'topics',
     'MONTH': 'month',
     'MAX_ATTENDEES': 'maxAttendees',
 }
-
+# GET request where we only need the key passed as part of the url
 CONF_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1),
 )
-
+# Post request where we only need the key passed as part of the url
+# This reques also has the conference form
 CONF_POST_REQUEST = endpoints.ResourceContainer(
     ConferenceForm,
     websafeConferenceKey=messages.StringField(1),
 )
-
+# GET request for Sessions where we only need the key passed as part of the url
 CONFSESSION_POST_REQUEST = endpoints.ResourceContainer(
     ConfSessionForm,
     websafeConferenceKey=messages.StringField(1),
 )
+# Post request for Sessions where we only need the key passed as part of
+# the url with session form
 CONFSESSION_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1),
 )
+# GET request for Sessions where we only need the conference key  and the
+# session type are passed as part of the url
 CONFSESSIONTYPES_GET_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeConferenceKey=messages.StringField(1),
     sessionType=messages.StringField(2),
 )
+# GET request for adding/removing Sessions to the wishlist and session key
+# is passed in the url
 WISHLIST_SESSION_POST_REQUEST = endpoints.ResourceContainer(
     message_types.VoidMessage,
     websafeKey=messages.StringField(1),
@@ -138,9 +147,6 @@ class ConferenceApi(remote.Service):
                 if field.name == 'teeShirtSize':
                     setattr(pf, field.name, getattr(
                         TeeShirtSize, getattr(prof, field.name)))
-                # elif field.name == 'conferenceKeysToAttend':
-                #     conf_keys = list(wsck for wsck in getattr(prof, field.name))
-                #     setattr(pf, field.name, conf_keys)
                 else:
                     setattr(pf, field.name, getattr(prof, field.name))
         pf.check_initialized()
@@ -172,8 +178,6 @@ class ConferenceApi(remote.Service):
         """Get user Profile and return to user, possibly updating it first."""
         # get user Profile
         prof = self._getProfileFromUser()
-        logging.info(str(prof))
-
         # if saveProfile(), process user-modifyable fields
         if save_request:
             for field in ('displayName', 'teeShirtSize'):
@@ -197,7 +201,6 @@ class ConferenceApi(remote.Service):
         \nVenue:\t{6}""".format(conf.name, session.session_name,
                                 session.duration, session.date, session.start_time,
                                 conf.city, session.venue)
-        logging.info(messageTxt)
         return messageTxt
 
 
@@ -205,7 +208,6 @@ class ConferenceApi(remote.Service):
 
     def _copyConferenceToForm(self, conf, displayName):
         """Copy relevant fields from Conference to ConferenceForm."""
-        logging.info(str(conf))
         cf = ConferenceForm()
 
         # return set of ConferenceForm objects per Conference
@@ -225,10 +227,12 @@ class ConferenceApi(remote.Service):
 
     def _copyConfSessionToForm(self, confsession):
         """Copy relevant fields from Conference to ConferenceForm."""
-        logging.info(str(confsession))
+        cf = ConfSessionForm()
+        if not confsession:
+            return cf
         conf_key = confsession.key.parent()
         conf = conf_key.get()
-        cf = ConfSessionForm()
+
         for field in cf.all_fields():
             if hasattr(confsession, field.name):
                 # convert Date to date string; just copy others
@@ -236,9 +240,6 @@ class ConferenceApi(remote.Service):
                     setattr(cf, field.name, str(
                         getattr(confsession, field.name)))
                 elif field.name == 'type_of_session':
-                    logging.info("the field ame ")
-                    logging.info(
-                        str(getattr(SESSION_TYPE, getattr(confsession, field.name))))
                     setattr(cf, field.name, getattr(
                         SESSION_TYPE, getattr(confsession, field.name)))
                 else:
@@ -375,7 +376,6 @@ class ConferenceApi(remote.Service):
                      for field in f.all_fields()}
 
             try:
-                logging.debug("Helooe")
                 filtr["field"] = FIELDS[filtr["field"]]
                 filtr["operator"] = OPERATORS[filtr["operator"]]
             except KeyError:
@@ -506,7 +506,6 @@ class ConferenceApi(remote.Service):
                 'No conference found with key: %s' % request.websafeConferenceKey)
 
         if conf.organizerUserId != user_id:
-            logging.info(conf.organizerUserId + " != " + user_id)
             raise endpoints.NotFoundException(
                 'Only organiser can add sessions. Please contact %s' % conf.organizerUserId)
 
@@ -530,16 +529,13 @@ class ConferenceApi(remote.Service):
         if data['date']:
             data['date'] = datetime.strptime(
                 data['date'][:10], "%Y-%m-%d").date()
-            logging.info(data['date'])
 
         # convert time
         if data['start_time']:
             data['start_time'] = datetime.strptime(
                 data['start_time'][:5], "%H:%M").time()
-            logging.info(data['start_time'])
             # adding time to the date field the will help filter results later
             combTime = datetime.combine(data['date'], data['start_time'])
-            logging.info(combTime)
             data['date'] = combTime
 
         # convert session type
@@ -560,14 +556,18 @@ class ConferenceApi(remote.Service):
                               'sessioninfo': self._createSessionMailContent(confSession, conf)},
                       url='/tasks/sendemail/createsession'
                       )
-
+        speakerKey = request.speaker
         # send mail to the Speaker So he knows the schedule
         if request.speaker:
-            speakerProf = ndb.Key(urlsafe=request.speaker).get()
+            speakerProf = ndb.Key(urlsafe=speakerKey).get()
             taskqueue.add(params={'email': speakerProf.speakerUserId,
                                   'sessioninfo': self._createSessionMailContent(confSession, conf)},
                           url='/tasks/sendemail/speakersessioncreated'
                           )
+            # add task to check for features speaker.
+            taskqueue.add(params={'email': speakerProf.speakerUserId,
+                                  'speakerKey': speakerKey,
+                                  'confKey': conf_key.urlsafe()}, url='/tasks/setfeaturedspeaker')
         return returnObj
 
 # - - - Announcements - - - - - - - - - - - - - - - - - - - -
@@ -599,6 +599,66 @@ class ConferenceApi(remote.Service):
 
         return announcement
 
+    @staticmethod
+    def _cacheStartingSoon():
+        """Finds and sets the sessions startign soon in the memcache; used by
+        memcache cron job & putAnnouncement().
+        """
+        logging.info("in the method for set starting soon")
+        startDate = datetime.combine(
+            datetime.now().date(), datetime.now().time())
+        logging.info(startDate)
+        tzone = strftime("%z", gmtime())
+        logging.info(tzone)
+        if tzone in ("UTC", "+0000"):
+            delta = timedelta(hours=-5)
+            startDate += delta
+        logging.info(startDate)
+        endDate = startDate + timedelta(minutes=int(STARTING_SOON_INTERVAL))
+        logging.info(str(startDate) + " ," + str(endDate))
+        sessions = ConfSession.query(
+            ConfSession.date > startDate).order(ConfSession.date)
+        if endDate:
+            sessions = sessions.filter(
+                ConfSession.date <= endDate).order(ConfSession.date)
+
+        if sessions:
+            sessions = sessions.fetch(
+                5, projection=[ConfSession.session_name, ConfSession.date, ConfSession.venue, ConfSession.type_of_session])
+
+            logging.info(str(sessions))
+            memcache.set(MEMCACHE_STARTING_SOON_KEY, sessions)
+        else:
+            # delete the memcache announcements entry
+            sesssions = None
+            memcache.delete(MEMCACHE_STARTING_SOON_KEY)
+
+        return sessions
+
+    @staticmethod
+    def _cacheFeaturedSpeaker(request):
+        """Create Announcement & assign to memcache; used by
+        memcache cron job & putAnnouncement().
+        """
+        sessions = 0
+        logging.info("in the method for set featured speaker")
+        logging.info(request.get('confKey'))
+        sessions = ConfSession.query(ancestor=ndb.Key(urlsafe=request.get(
+            'confKey'))).filter(ConfSession.speaker == request.get('speakerKey'))
+        if sessions.count(limit=5) > 1:
+            conf = ndb.Key(urlsafe=request.get('confKey')).get()
+            speakerProf = ndb.Key(urlsafe=request.get(
+                'speakerKey')).parent().get()
+            sessions = sessions.fetch(5, projection=[ConfSession.session_name])
+            logging.info(speakerProf.displayName)
+            featuredSpeaker = {'speakerName': speakerProf.displayName,
+                               'confName': conf.name,
+                               'sessions': [conf_session.session_name for conf_session in
+                                            sessions]
+                               }
+            memcache.set(MEMCACHE_FEATURED_SPEAKERS, featuredSpeaker)
+        return featuredSpeaker
+
     def _createSpeaker(self, request):
         """Create or update speaker object, returning SpeakerForm/request."""
         # preload necessary data items
@@ -606,6 +666,7 @@ class ConferenceApi(remote.Service):
         if not user:
             raise endpoints.UnauthorizedException('Authorization required')
         user_id = getUserId(user)
+        # If there are no sold out conferences,
         exSpeaker = self._verifySpeaker(request, True)
 
         if not request.topics:
@@ -660,6 +721,18 @@ class ConferenceApi(remote.Service):
                 setattr(spkr, field.name, speaker.key.urlsafe())
         spkr.check_initialized()
         logging.info(str(spkr))
+        return spkr
+
+    def _copyFeaturedSpeakerToForm(self, featuredSpeaker):
+        """Copy relevant fields from Speaker to SpeakerForm."""
+        spkr = FeaturedSpeakerForm()
+        speaker = featuredSpeaker
+        for field in spkr.all_fields():
+            logging.info(field.name)
+            setattr(spkr, field.name, speaker.get(field.name))
+
+        spkr.check_initialized()
+        logging.info(spkr)
         return spkr
 
     def _verifySpeaker(self, request, suppressEx=False):
@@ -736,44 +809,44 @@ class ConferenceApi(remote.Service):
         strEndDate = request.end_date
         if strdate:
             startDate = datetime.combine(datetime.strptime(strdate[
-                                         :16], "%Y-%m-%d %H:%M").date(),
-                                         datetime.strptime(strdate[:16], "%Y-%m-%d %H:%M").time())
+                :16], "%Y-%m-%d %H:%M").date(),
+                datetime.strptime(strdate[:16], "%Y-%m-%d %H:%M").time())
         if strEndDate:
             endDate = datetime.combine(datetime.strptime(strEndDate[
-                                         :16], "%Y-%m-%d %H:%M").date(),
-                                         datetime.strptime(strEndDate[:16], "%Y-%m-%d %H:%M").time())
+                :16], "%Y-%m-%d %H:%M").date(),
+                datetime.strptime(strEndDate[:16], "%Y-%m-%d %H:%M").time())
         else:
-            endDate = None;
-
+            endDate = None
 
         sessions = ConfSession.query(
             ConfSession.date > startDate).order(ConfSession.date)
         if endDate:
-            sessions = sessions.filter(ConfSession.date <= endDate).order(ConfSession.date)
-
+            sessions = sessions.filter(
+                ConfSession.date <= endDate).order(ConfSession.date)
 
         return sessions
 
-    def _getStartingSoonSessions(self,request):
+    def _getStartingSoonSessions(self, request):
         """ return all session that are starting soon request
         will have the delta to select the upper limit
         """
         strdate = request.start_date
-        
+
         if strdate:
             startDate = datetime.combine(datetime.strptime(strdate[
-                                         :16], "%Y-%m-%d %H:%M").date(),
-                                         datetime.strptime(strdate[:16], "%Y-%m-%d %H:%M").time())
+                :16], "%Y-%m-%d %H:%M").date(),
+                datetime.strptime(strdate[:16], "%Y-%m-%d %H:%M").time())
         else:
             raise endpoints.BadRequestException("'startDate' field required")
 
         endDate = startDate + timedelta(minutes=int(request.deltaMinutes))
-        logging.info(str(startDate) +" ,"  +str(endDate))
+        logging.info(str(startDate) + " ," + str(endDate))
         sessions = ConfSession.query(
             ConfSession.date > startDate).order(ConfSession.date)
         logging.info(str(sessions))
         if endDate:
-            sessions = sessions.filter(ConfSession.date <= endDate).order(ConfSession.date)
+            sessions = sessions.filter(
+                ConfSession.date <= endDate).order(ConfSession.date)
         return sessions
 
     #  ------------------------------- Endpoints ---------------------
@@ -805,6 +878,40 @@ class ConferenceApi(remote.Service):
             announcement = ""
         logging.info(announcement)
         return StringMessage(data=announcement)
+
+    @endpoints.method(message_types.VoidMessage, ConfSessionForms,
+                      path='sessions/starting-soon/cached',
+                      http_method='GET', name='getSessionsStartingSoonCached')
+    def getSessionsStartingSoonCached(self, request):
+        """Return Announcement from memcache."""
+        # TODO 1
+        # return an existing announcement from Memcache or an empty string.
+        logging.info(MEMCACHE_STARTING_SOON_KEY)
+        sessions = memcache.get(MEMCACHE_STARTING_SOON_KEY)
+        if not sessions:
+            sessions = None
+            raise endpoints.ConflictException(
+                'Sessions Not Found')
+        return ConfSessionForms(
+            items=[self._copyConfSessionToForm(
+                session) for session in sessions]
+        )
+
+    @endpoints.method(message_types.VoidMessage, FeaturedSpeakerForm,
+                      path='speaker/featured-speaker/cached',
+                      http_method='GET', name='getFeaturedSpeakerCached')
+    def getFeaturedSpeakerCached(self, request):
+        """Return featured speakers from memcache."""
+        # TODO 1
+        # return an existing announcement from Memcache or an empty string.
+        logging.info(MEMCACHE_FEATURED_SPEAKERS)
+        featuredSpeaker = memcache.get(MEMCACHE_FEATURED_SPEAKERS)
+        logging.info(featuredSpeaker)
+        if not featuredSpeaker:
+            featuredSpeaker = None
+            raise endpoints.ConflictException(
+                'Featured Speaker Not Found')
+        return self._copyFeaturedSpeakerToForm(featuredSpeaker)
 
     @endpoints.method(message_types.VoidMessage, ProfileForm,
                       path='profile', http_method='GET', name='getProfile')
@@ -889,38 +996,28 @@ class ConferenceApi(remote.Service):
                    conferences]
         )
 
-    @endpoints.method(message_types.VoidMessage, ConferenceForms,
-                      path='filterPlayground',
-                      http_method='GET', name='filterPlayground')
-    def filterPlayground(self, request):
-        q = Conference.query()
-        # simple filter usage:
-        # q = q.filter(Conference.city == "Paris")
+    @endpoints.method(ConfSessionTask3SearchForm, ConfSessionForms,
+                      path='sessions/beforetime',
+                      http_method='GET', name='getAllSessionsBeforeTime')
+    def getAllSessionsBeforeTime(self, request):
+        """ Returns all the sessions before the 'start_time' and are not of type 'session_type' """
+        stTime = request.start_time
+        # format the time from the requst
+        startTime = datetime.strptime(stTime[:5], "%H:%M").time()
+        # fetch only the keys for sessions before the requested time
+        timeQry = ConfSession.query(ConfSession.start_time < startTime).order(
+            ConfSession.start_time).order(-ConfSession.date).fetch(keys_only=True)
 
-        # advanced filter building and usage
-        field = "city"
-        operator = "="
-        value = "London"
-        f = ndb.query.FilterNode(field, operator, value)
-        q = q.filter(f)
-        field2 = "topics"
-        operator2 = "="
-        value2 = "Medical Innovations"
-        f2 = ndb.query.FilterNode(field2, operator2, value2)
-        q = q.filter(f2)
-        field3 = "maxAttendees"
-        operator3 = ">"
-        value3 = "6"
-        f3 = ndb.query.FilterNode(field3, operator3, value3)
-        q = q.filter(f3)
-
-        # TODO
-        # add 2 filters:
-        # 1: city equals to London
-        # 2: topic equals "Medical Innovations"
-
-        return ConferenceForms(
-            items=[self._copyConferenceToForm(conf, "") for conf in q]
+        # query the session which are not of the type specified in the request
+        # and get only the keys
+        typeQry = ConfSession.query(ConfSession.type_of_session != request.session_type).order(
+            ConfSession.type_of_session).order(-ConfSession.date).fetch(keys_only=True)
+        # create a set by intersection of both the queries and then get the
+        # results
+        cSessions = ndb.get_multi(set(timeQry).intersection(typeQry))
+        # return the results
+        return ConfSessionForms(
+            items=[self._copyConfSessionToForm(conf) for conf in cSessions]
         )
 
     @endpoints.method(CONF_GET_REQUEST, BooleanMessage,
@@ -972,7 +1069,7 @@ class ConferenceApi(remote.Service):
         # conf = conf_key.get()
         # create ancestor query for all key matches for this conference
         confSessions = ConfSession.query(
-            ancestor=ndb.Key(urlsafe=request.websafeConferenceKey))
+            ancestor=ndb.Key(urlsafe=request.websafeConferenceKey)).order(-ConfSession.date)
         # return set of ConferenceForm objects per Conference
         return ConfSessionForms(
             items=[self._copyConfSessionToForm(
@@ -1063,8 +1160,9 @@ class ConferenceApi(remote.Service):
             items=[self._copyConfSessionToForm(
                 session) for session in sessions]
         )
+
     @endpoints.method(ConfSessionSearchForm, ConfSessionForms,
-                      path='sessions/startingsoon',
+                      path='sessions/starting-soon/current',
                       http_method='GET', name='getSessionsStartingSoon')
     def getSessionsStartingSoon(self, request):
         """Gets all the sessions starting within a specified time delta."""

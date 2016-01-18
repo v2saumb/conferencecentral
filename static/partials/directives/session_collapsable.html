@@ -1,5 +1,5 @@
 <a ng-click="pcidCtrl.toggleDetails()" class="toggle-link" ng-Class="'{{pcidCtrl.itemType}}'" ><i class="fa fa-caret-down"></i> See details</a>
-<div collapse="!pcidCtrl.showDetails" class="collapsable_sessions">
+<div uib-collapse="!pcidCtrl.showDetails" class="collapsable_sessions">
 	<p><strong>Date:</strong> {{item.date}}</p>
 	<p><strong>Time:</strong> {{item.start_time}}</p>
 	<p><strong>Duration:</strong> {{item.duration}}</p>

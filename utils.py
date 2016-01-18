@@ -7,6 +7,7 @@ from google.appengine.api import urlfetch
 from models import Profile
 
 def getUserId(user, id_type="email"):
+    """ Get the user id from the current user session"""
     if id_type == "email":
         return user.email()
 

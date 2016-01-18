@@ -1,65 +1,136 @@
-<div class="intro-header">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="intro-message">
-                <h1>Welcome to Conference Central</h1>
-
-                <h3>Lets you manage conferences</h3>
-                <hr class="intro-divider">
-                <ul class="list-inline intro-social-buttons">
-                    <li id="signInLink" ng-hide="getSignedInState()" on-click="return false">
-                        <a class="btn btn-primary btn-lg" ng-click="signIn()">Google+ SignIn</a>
-                    </li>
-                    <li id="signOutLink" ng-show="getSignedInState()" on-click="return false">
-                        <a class="btn btn-primary btn-lg" ng-click="signOut()">Log out</a>
-                    </li>
-                </ul>
+<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="5000" ng-controller="CarouselContentsCtrl as cVm" ng-init="cVm.init()">
+    <!-- Indicators -->
+    <ol class="carousel-indicators">
+        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+        <li data-target="#myCarousel" data-slide-to="1"></li>
+        <li data-target="#myCarousel" data-slide-to="2"></li>
+        <li data-target="#myCarousel" data-slide-to="3"></li>
+    </ol>
+    <!-- Wrapper for slides -->
+    <div class="carousel-inner" role="listbox">
+        <div class="item active">
+            
+            <div class="intro-header">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="intro-message">
+                            <h1>Welcome to Conference Central</h1>
+                            <h3>Lets you manage conferences</h3>
+                            <hr class="intro-divider">
+                            <ul class="list-inline intro-social-buttons">
+                                <li id="signInLink" ng-hide="getSignedInState()" on-click="return false">
+                                    <a class="btn btn-primary btn-lg" ng-click="signIn()">Google+ SignIn</a>
+                                </li>
+                                <li id="signOutLink" ng-show="getSignedInState()" on-click="return false">
+                                    <a class="btn btn-primary btn-lg" ng-click="signOut()">Log out</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        <div class="item">
+            <div class="intro-header-limited-seats">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="intro-message">
+                            <h1>Limited Seats Available</h1>
+                            <h3 ng-bind="cVm.announcement"></h3>
+                            <hr class="intro-divider">
+                            <ul class="list-inline intro-social-buttons">
+                                <li  on-click="return false">
+                                    <a href="#/conference" class="btn btn-info btn-lg">View Conferences</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="item container session-container">
+            <h1>Sessions Starting Soon</h1>
+            <hr class="intro-divider">
+            <conference-sessions sessions="cVm.sessions" show-filter="false" show-Conf-Name="true" show-details="false" show-add-remove="false" auto-archive="cVm.autoArchive"></conference-sessions>
+            <ul class="list-inline intro-social-buttons">
+                <li  on-click="return false">
+                    <a href="#/sessions" class="btn btn-info btn-lg">View Sessions</a>
+                </li>
+            </ul>
+            
+        </div>
+        <div class="item container btn-warning speaker-container">
+                <h1>Featured Speaker</h1>
+                <div class="row" ng-if="cVm.featuredSpeaker">
+                    <h4> Meeet Our Featured Speaker!</h4>
+                    <div class="col-md-12 "><p><h3 class="btn-primary">{{cVm.featuredSpeaker.speakerName}}</h3></p>
+                    <p> {{cVm.featuredSpeaker.speakerName}} is speaking at {{cVm.featuredSpeaker.confName}}. </p>
+                    <p> Following are the sessions by {{cVm.featuredSpeaker.speakerName}} at this conference</p>
+                    <ul class=" list-inline session-list">
+                        <li ng-repeat="session in cVm.featuredSpeaker.sessions" class="btn-info">{{session}}               </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row" ng-if="!cVm.featuredSpeaker">
+                <h4>No Featured speakes yet!. Watch this page featured speakers will be aded soon!</h4>
+            </div>
+            <ul class="list-inline intro-social-buttons">
+                <li  on-click="return false">
+                    <a href="#/speaker/view" class="btn btn-primary btn-lg">View Speakers</a>
+                </li>
+            </ul>
+        
     </div>
 </div>
+<!-- Left and right controls -->
+<a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+</a>
+<a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+</a>
+</div>
 <div class="section-a">
-    <div class="row">
-        <div class="col-lg-5 col-sm-6">
-            <hr>
-            <div class="clearfix"></div>
-            <h2>View conferences</h2>
-
-            <p class="lead">View by city, topics, date, max attendees.</p>
-            <a href="#/conference" class="btn btn-primary btn-lg">View conferences</a>
-        </div>
-        <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-            <img class="img-responsive" src="/img/business1.jpg" alt="">
-        </div>
+<div class="row">
+    <div class="col-lg-5 col-sm-6">
+        <hr>
+        <div class="clearfix"></div>
+        <h2>View conferences</h2>
+        <p class="lead">View by city, topics, date, max attendees.</p>
+        <a href="#/conference" class="btn btn-primary btn-lg">View conferences</a>
+    </div>
+    <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+        <img class="img-responsive" src="/img/business1.jpg" alt="">
     </div>
 </div>
-
+</div>
 <div class="section-a">
-    <div class="row">
-        <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
-            <hr class="section-heading-spacer">
-            <div class="clearfix"></div>
-            <h2 class="section-heading">Create new conferences</h2>
-
-            <p class="lead">In 10 seconds or less.</p>
-            <a href="#/conference/create" class="btn btn-primary btn-lg">Create a conference</a>
-        </div>
-        <div class="col-lg-5 col-sm-pull-6  col-sm-6">
-            <img class="img-responsive" src="/img/business2.jpg" alt="">
-        </div>
+<div class="row">
+    <div class="col-lg-5 col-lg-offset-1 col-sm-push-6  col-sm-6">
+        <hr class="section-heading-spacer">
+        <div class="clearfix"></div>
+        <h2 class="section-heading">Create new conferences</h2>
+        <p class="lead">In 10 seconds or less.</p>
+        <a href="#/conference/create" class="btn btn-primary btn-lg">Create a conference</a>
+    </div>
+    <div class="col-lg-5 col-sm-pull-6  col-sm-6">
+        <img class="img-responsive" src="/img/business2.jpg" alt="">
     </div>
 </div>
-
+</div>
 <div class="section-a">
-    <div class="row">
-        <div class="col-lg-5 col-sm-6">
-            <hr>
-            <div class="clearfix"></div>
-            <h2 class="section-heading">Update your profile</h2>
-            <a href="#/profile" class="btn btn-primary btn-lg">View my profile</a>
-        </div>
-        <div class="col-lg-5 col-lg-offset-2 col-sm-6">
-            <img class="img-responsive" src="/img/business3.jpg" alt="">
-        </div>
+<div class="row">
+    <div class="col-lg-5 col-sm-6">
+        <hr>
+        <div class="clearfix"></div>
+        <h2 class="section-heading">Update your profile</h2>
+        <a href="#/profile" class="btn btn-primary btn-lg">View my profile</a>
     </div>
+    <div class="col-lg-5 col-lg-offset-2 col-sm-6">
+        <img class="img-responsive" src="/img/business3.jpg" alt="">
+    </div>
+</div>
 </div>

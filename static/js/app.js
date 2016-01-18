@@ -76,8 +76,8 @@ config(['$routeProvider', 'toastrConfig',
 
 
         angular.extend(toastrConfig, {
-            autoDismiss: false,
-            timeOut: 2000,
+            autoDismiss: true,
+            timeOut: 1500,
             containerId: 'toast-container',
             maxOpened: 1,
             newestOnTop: true,
@@ -134,7 +134,7 @@ app.constant('HTTP_ERRORS', {
  * Service that holds the OAuth2 information shared across all the pages.
  *
  */
-app.factory('oauth2Provider', function($modal) {
+app.factory('oauth2Provider', function($uibModal) {
     var oauth2Provider = {
         CLIENT_ID: '453719718803-kpltcg8jlmo351vs7vmrch8gm2caf5g2.apps.googleusercontent.com',
         SCOPES: 'email profile',
@@ -173,7 +173,7 @@ app.factory('oauth2Provider', function($modal) {
      * @returns {*|Window}
      */
     oauth2Provider.showLoginModal = function() {
-        var modalInstance = $modal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: '/partials/login.modal.html',
             controller: 'OAuth2LoginModalCtrl'
         });

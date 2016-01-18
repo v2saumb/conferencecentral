@@ -40,3 +40,11 @@ There are methods in in the app to filter the sessions based on type speaker con
 The UI has also been updated to accommodate the new methods and sessions and conferences
 
 
+assumptions
+the end date is 23:59
+the bootstrap updated
+changes in the UI
+added sessions 
+added speakers 
+view sessions by speakers
+shows who is logged in 

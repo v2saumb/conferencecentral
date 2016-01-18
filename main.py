@@ -7,19 +7,32 @@ from conference import ConferenceApi
 
 
 class SetAnnouncementHandler(webapp2.RequestHandler):
+    """ Handles the anouncement get request that come through the CRON"""
 
     def get(self):
         """Set Announcement in Memcache."""
-        # TODO 1
-        # use _cacheAnnouncement() to set announcement in Memcache
         ConferenceApi._cacheAnnouncement()
 
-app = webapp2.WSGIApplication([
-    ('/crons/set_announcement', SetAnnouncementHandler),
-], debug=True)
+
+class SetStartingSoon(webapp2.RequestHandler):
+    """ Handles the starting soon get request that come through the CRON"""
+
+    def get(self):
+        """Set starting soon in session."""
+        ConferenceApi._cacheStartingSoon()
+
+
+class SetNewSpeakerSpecial(webapp2.RequestHandler):
+    """ Handles the task for setting the featured speaker """
+
+    def post(self):
+        """Set featured Speaker in the Memcache."""
+        logging.info("inside the featured speaker job")
+        ConferenceApi._cacheFeaturedSpeaker(self.request)
 
 
 class SendConfirmationEmailHandler(webapp2.RequestHandler):
+    """ Handles the post request for sending emails for the conference creattion """
 
     def post(self):
         """Send email confirming Conference creation."""
@@ -35,26 +48,28 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
 
 
 class SendSessionEmailHandler(webapp2.RequestHandler):
-    """ Sends a mail to the creator of the session """
+    """ Handles the post request for sending emails for the session creattion """
 
     def post(self):
+        """ Sends emails for the session creattion """
         session = self.request.get('sessioninfo')
         messageTxt = """Hi There! \nYou created the following Session:{}""".format(
             session)
         logging.info(messageTxt)
         mail.send_mail(
             'noreply@%s.appspotmail.com' % (
-                app_identity.get_application_id()),     # from
-            self.request.get('email'),                  # to
-            'You created / updated a Session!',            # subj
+                app_identity.get_application_id()),
+            self.request.get('email'),
+            'You created / updated a Session!',
             messageTxt
         )
 
 
 class SendSpeakerEmailHandler(webapp2.RequestHandler):
-    """ Sends a mail to the speaker of the session """
+    """ Handles the post request for sending emails for the session creattion to the speaker"""
 
     def post(self):
+        """ Sends the emails for the session creattion to the speaker"""
         session = self.request.get('sessioninfo')
         messageTxt = """Hi There! \nYou are required to speak at the following Session:{}""".format(
             session)
@@ -68,7 +83,9 @@ class SendSpeakerEmailHandler(webapp2.RequestHandler):
         )
 
 app = webapp2.WSGIApplication([
+    ('/tasks/setfeaturedspeaker', SetNewSpeakerSpecial),
     ('/crons/set_announcement', SetAnnouncementHandler),
+    ('/crons/set_starting_soon', SetStartingSoon),
     ('/tasks/sendemail/createconference', SendConfirmationEmailHandler),
     ('/tasks/sendemail/createsession', SendSessionEmailHandler),
     ('/tasks/sendemail/speakersessioncreated', SendSpeakerEmailHandler)

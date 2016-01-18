@@ -27,6 +27,11 @@ sessionWishListCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS'
 conferenceApp.controllers.controller('ViewAllSessionsCtrl', viewAllSessionsCtrl);
 viewAllSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$routeParams', 'toastr', '$filter'];
 
+
+conferenceApp.controllers.controller('CarouselContentsCtrl', carouselContentsCtrl);
+carouselContentsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', 'toastr', '$interval'];
+
+
 conferenceApp.controllers.controller('CreateConferenceCtrl', createConferenceCtrl);
 createConferenceCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', 'toastr'];
 
@@ -49,7 +54,7 @@ conferenceApp.controllers.controller('RootCtrl', rootCtrl);
 rootCtrl.$inject = ['$scope', '$location', 'oauth2Provider', 'toastr'];
 
 conferenceApp.controllers.controller('OAuth2LoginModalCtrl', oAuth2LoginModalCtrl);
-oAuth2LoginModalCtrl.$inject = ['$scope', '$modalInstance', '$rootScope', 'oauth2Provider', 'toastr'];
+oAuth2LoginModalCtrl.$inject = ['$scope', '$uibModalInstance', '$rootScope', 'oauth2Provider', 'toastr'];
 
 conferenceApp.controllers.controller('DatepickerCtrl', datePkrCtrl)
 datePkrCtrl.$inject = ['$scope'];
@@ -710,15 +715,23 @@ function rootCtrl($scope, $location, oauth2Provider, toastr) {
     $scope.signIn = function() {
         oauth2Provider.signIn(function() {
             gapi.client.oauth2.userinfo.get().execute(function(resp) {
-                $scope.$apply(function() {
-                    if (resp.email) {
-                        oauth2Provider.signedIn = true;
-                        loastr.success('Logged in with ' + resp.email);
-                    }
-                });
+                if (!resp.error) {
+                    toastr.success('Logged in with ' + resp.email);
+                    $scope.getUserProfile();
+                }
+
             });
         });
     };
+    /*adding a watch to check and update the profile in scope based on the signed in state*/
+    $scope.$watch(function() {
+        return $scope.getSignedInState();
+    }, function(newVal, oldVal) {
+        if (newVal !== oldVal) {
+            console.log('calling the get profile');
+            $scope.getUserProfile();
+        }
+    })
     /**
      * Render the signInButton and restore the credential if it's stored in the cookie.
      * (Just calling this to restore the credential from the stored cookie. So hiding the signInButton immediately
@@ -738,12 +751,32 @@ function rootCtrl($scope, $location, oauth2Provider, toastr) {
             'cookiepolicy': 'single_host_origin',
             'scope': oauth2Provider.SCOPES
         });
+
     };
+
+    $scope.getUserProfile = function() {
+        gapi.client.conference.getProfile().
+        execute(function(resp) {
+            $scope.$apply(function() {
+                $scope.loading = false;
+                if (resp.error) {
+                    // Failed to get a user profile.
+                } else {
+                    // Succeeded to get the user profile.
+                    $scope.profile.displayName = resp.result.displayName;
+                    $scope.profile.teeShirtSize = resp.result.teeShirtSize;
+                    $scope.initialProfile = resp.result;
+                }
+            });
+        });
+    }
     /**
      * Logs out the user.
      */
     $scope.signOut = function() {
         oauth2Provider.signOut();
+        $scope.profile = {};
+        $scope.initialProfile = {};
         $location.path('/home');
 
         toastr.success('Logged out !');
@@ -782,7 +815,7 @@ function rootCtrl($scope, $location, oauth2Provider, toastr) {
  *
  */
 
-function oAuth2LoginModalCtrl($scope, $modalInstance, $rootScope, oauth2Provider, toastr) {
+function oAuth2LoginModalCtrl($scope, $uibModalInstance, $rootScope, oauth2Provider, toastr) {
     $scope.singInViaModal = function() {
         oauth2Provider.signIn(function() {
             gapi.client.oauth2.userinfo.get().execute(function(resp) {
@@ -790,7 +823,7 @@ function oAuth2LoginModalCtrl($scope, $modalInstance, $rootScope, oauth2Provider
                     oauth2Provider.signedIn = true;
                     toastr.success('Logged in with ' + resp.email);
                 });
-                $modalInstance.close();
+                $uibModalInstance.close();
             });
         });
     };
@@ -806,7 +839,7 @@ function oAuth2LoginModalCtrl($scope, $modalInstance, $rootScope, oauth2Provider
 
 function datePkrCtrl($scope) {
     $scope.today = function() {
-        $scope.dt = new Date();
+        $scope.dt = moment().format('dd-MMMM-yyyy');
     };
 
     $scope.clear = function() {
@@ -827,7 +860,6 @@ function datePkrCtrl($scope) {
     $scope.dateOptions = {
         'year-format': "'yy'",
         'starting-day': 1,
-        'minDate': new Date()
     };
     $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'shortDate'];
     $scope.format = $scope.formats[0];
@@ -1152,7 +1184,7 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $rout
                     vm.conference = resp.result;
                     vm.createAllowed = $scope.profile.displayName === vm.conference.organizerDisplayName;
                     vm.minDate = vm.getDateFromString(vm.conference.startDate)
-                    vm.maxDate = vm.getDateFromString(vm.conference.endDate)
+                    vm.maxDate = vm.getDateFromString(vm.conference.endDate).addHours(23, 59, 0, 0);
                     if (!vm.createAllowed) {
                         toastr.warning('Only Conference Organizers can Create Sessions');
                     }
@@ -1318,12 +1350,13 @@ function sessionWishListCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routePa
 
 function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routeParams, toastr, $filter) {
     var vm = this;
-    vm.headingText = "Showing All Session(s)"
+    vm.headingText = "Showing All Future Session(s)"
     vm.sessions = [];
     vm.autoArchive = true;
     vm.endDate = null;
     vm.dateType = "TODAY"
 
+    /*setup a watch to calculate the end date for the method. */
     $scope.$watch(function() {
         console.log('value changes ')
         return vm.dateType;
@@ -1388,4 +1421,64 @@ function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routePa
             });
         });
     }
+}
+
+function carouselContentsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routeParams, toastr, $filter, $interval) {
+
+    var vm = this;
+    vm.sessions = [];
+    vm.announcement = "";
+    vm.featuredSpeaker = {};
+    vm.autoArchive = false;
+    vm.getCachedAnnouncements = function() {
+        /*get the announcements*/
+        gapi.client.conference.getAnnouncement().execute(function(resp) {
+            console.log(resp);
+            $scope.$apply(function() {
+                if (!resp.error) {
+                    vm.announcement = resp.data;
+
+                }
+            });
+        });
+    }
+
+    vm.getCachedStartingSoon = function() {
+        /*get the information for the sessions starting soon */
+        gapi.client.conference.getSessionsStartingSoonCached().execute(function(resp) {
+            $scope.$apply(function() {
+                $scope.loading = false;
+                if (!resp.error) {
+                    if (resp.result.items && resp.result.items.length > 0) {
+                        $scope.submitted = false;
+                        vm.speakerExists = true;
+                        vm.sessions = resp.result.items;
+                    }
+                }
+            });
+        });
+    }
+
+    vm.getFeaturedSpeaker = function() {
+        /*get the featured speaker */
+        gapi.client.conference.getFeaturedSpeakerCached().execute(function(resp) {
+            $scope.$apply(function() {
+                if (!resp.error) {
+                    vm.featuredSpeaker = resp.result;
+                } else {
+                    vm.featuredSpeaker = undefined;
+                }
+
+            });
+        });
+
+    }
+
+    vm.init = function() {
+        vm.getCachedAnnouncements();
+        vm.getCachedStartingSoon();
+        vm.getFeaturedSpeaker();
+    }
+
+
 }
