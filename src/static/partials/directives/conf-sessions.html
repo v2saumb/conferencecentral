@@ -1,0 +1,43 @@
+<div class="conf-sessions" >
+    <div class"row">
+        <div class="col-md-12">
+            <div ng-if="sessions.length == 0">
+                <h4>No matching results.</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row" ng-show="sessions.length > 0 && showFilter==='true'">
+        <div class="col-md-2">
+            <label>Filter:</label>
+        </div>
+        <div class="col-md-10 pull-left">
+            <input type="text" ng-model="filterText" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 200, 'blur': 0 } }"/>
+        </div>
+    </div>
+    <div class="row " ng-show="sessions.length > 0">
+        <table id="conference-table" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th ng-if="showDetails==='true'">Session Details</th>
+                    <th>Date Time(24Hrs Format)</th>
+                    <th ng-if="showConfName">Conference</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th ng-if="showAddRemove!=='false'">WishList</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="session in sessions| filter:filterText">
+                    <td ng-if="showDetails==='true'"><collapsible-Item-Details item-type="SESSION" item="session"></collapsible-Item-Details></td>
+                    <td >{{session.date}}</td>
+                    <td  ng-if="showConfName" >{{session.confName}}</td>
+                    <td >{{session.session_name}}</td>
+                    <td >{{session.type_of_session}}</td>
+                    <td ng-if="showAddRemove!=='false'"><button type="button" class="btn btn-primary" ng-disabled="csCtrl.loading" ng-click="csCtrl.addSessionToWishlist(session)"><i class="fa fa-plus"></i>  </button> <button type="button" class="btn btn-danger" ng-disabled="csCtrl.loading" ng-click="csCtrl.deleteSessionInWishlist(session)"><i class="fa fa-minus"></i>  </button></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        
+    </div>
+</div>

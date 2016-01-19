@@ -1,0 +1,41 @@
+.animation-container {
+  position:relative;
+}
+
+.animated-view {
+  padding:10px;
+}
+
+.animated-view.ng-enter, .animated-view.ng-leave {
+  transition:all ease-in 0.5s;
+  display:block;
+  width:100%;
+  border-left:1px solid black;
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  padding:10px;
+}
+
+.animated-view.ng-enter {
+  left:100%;
+}
+.animated-view.ng-enter.ng-enter-active {
+  left:0;
+}
+.animated-view.ng-leave.ng-leave-active {
+  left:-100%;
+}
+.animate-show {
+  opacity: 1;
+}
+
+.animate-show.ng-hide-add, .animate-show.ng-hide-remove {
+  transition: all linear 0.5s;
+}
+
+.animate-show.ng-hide {
+  opacity: 0;
+}

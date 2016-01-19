@@ -1,0 +1,13 @@
+<div ng-init="vm.init()">
+    <div class="row">
+        <div class="col-lg-12">
+            <img class="spinner" src="/img/ajax-loader.gif" ng-show="loading"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h3>{{vm.headingText}}</h3>
+        </div>
+    </div>
+    <conference-sessions sessions="vm.sessions" show-Conf-Name="true" show-add-remove="true" auto-archive="vm.autoArchive"></conference-sessions>
+</div>

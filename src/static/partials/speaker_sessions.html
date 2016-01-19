@@ -1,0 +1,18 @@
+<div ng-init="vm.init()">
+    <div class="row">
+        <div class="col-lg-12">
+            <div id="messages" class="alert alert-{{alertStatus}}" ng-show="messages">
+                <span ng-bind="messages"></span>
+                <i class="dismiss-messages pull-right glyphicon glyphicon-remove" ng-click="messages = ''"
+                ng-show="messages"></i>
+            </div>
+            <img class="spinner" src="/img/ajax-loader.gif" ng-show="loading"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h3>Show Session(s) By  {{vm.speakerName}}</h3>
+        </div>
+    </div>
+    <conference-sessions sessions="vm.sessions" show-Conf-Name="true"></conference-sessions>
+</div>

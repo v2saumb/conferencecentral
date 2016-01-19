@@ -1,0 +1,252 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    padding-top: 70px;
+}
+
+#signInLink, #signOutLink {
+    cursor: pointer;
+}
+
+/* To disable the Google+ Sign In Button, but gapi.signin.render should be invoked to store the credential
+   if that is stored in cookie. */
+#signInButton iframe {
+    display: none;
+}
+
+.required {
+    color: red;
+}
+
+.dismiss-messages {
+    cursor: pointer;
+}
+
+/* In a small screen, make the alert message sticky to the top */
+@media (max-width: 768px) {
+    #messages.alert, #rootMessages.alert {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 65px;
+        z-index: 1000;
+    }
+}
+
+.form-group-condensed {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.label-separated {
+    margin-right: 8px;
+}
+
+.spinner {
+    position: fixed;
+    top: 70px;
+    z-index: 9999;
+}
+
+#signInButton {
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+#profile-container {
+    float: right;
+    font-size: 85%;
+}
+
+#profile img {
+    max-height: 35px;
+    width: auto;
+    vertical-align: middle;
+}
+
+#show-conferences-tab {
+    margin-bottom: 20px;
+}
+
+ul#filters {
+    list-style: none;
+    padding-left: 0px;
+    font-size: 85%;
+}
+
+ul#filters span.glyphicon-remove {
+    font-size: 80%;
+}
+
+ul#conferences-list {
+    list-style: none;
+}
+
+.intro-header {
+    padding-top: 50px;
+    padding-bottom: 50px;
+    color: #f8f8f8;
+    text-shadow: black 0.1em 0.1em 0.2em;
+    background: url(/img/meeting-room.jpg) no-repeat center center;
+    background-size: cover;
+    text-align: center;
+}
+
+
+.intro-header-limited-seats {
+    padding-top: 50px;
+    padding-bottom: 50px;
+    color: #f8f8f8;
+    text-shadow: black 0.1em 0.1em 0.2em;
+    background: url(/img/images.jpg) no-repeat center center;
+    background-size: cover;
+    text-align: center;
+}
+
+.intro-message {
+    position: relative;
+    padding-top: 5%;
+    padding-bottom: 5%;
+    vertical-align: middle;
+}
+
+.section-a {
+    padding: 50px 0;
+}
+
+.navbar-collapse .dropdown-menu{
+    background-color:#007fff;
+    color:#ffffff;
+}
+.dropdown-menu > li >a{
+    color:#ffffff;
+}
+.navbar-collapse .dropdown-menu > li >a,
+.navbar-nav  > li >a{
+  transition: all ease-in 0.25s;
+}
+.dropdown-menu > li >a:hover,
+.dropdown-menu > li >a:focus,
+.dropdown-menu > li.active > a{
+    background-color:#0066cc;
+}
+
+
+.conf-sessions  .table-responsive{
+    max-height:360px;
+
+}
+.header-row{
+    background-color: #dddddd;
+    text-align: center;
+    font-weight: bold;
+}
+.row .session-list{s
+    text-align: center;
+}
+.conf-sessions .row{
+    border-bottom: 1px #ddd solid;
+    padding:2px;
+}
+.conf-sessions .row:nth-child(odd){
+    background: #f9f9f9;
+}
+.collapsable_sessions{
+    margin-top: 10px;
+    position: absolute;
+    background-color: #fff;
+    padding: 10px;
+    box-shadow: 2px 2px 1px 1px #bbb;
+    width: 350px;
+    border: 1px solid #ddd;
+}
+
+.toast-top-full-width{
+    top:61px !important;
+}
+.session-selector{
+    background-color: #eee;
+    padding:5px;
+    margin-bottom: 10px;
+}
+
+.user-name-circle{
+    width: 25px;
+    height: 25px;
+    border: 1px solid #fff;
+    padding-top: 2px;
+    border-radius: 50%;
+    margin-right: 5px;
+    display: inline-block;
+    padding-left: 6px;
+    background-color: #fff;
+    color: #007fff;
+    font-weight: bold;
+    box-shadow: inset 0 0 1px 1px red;
+}
+.icon-red{
+        color: #E4421B;
+    background-color: #fff;
+    border: 1px solid transparent;
+    border-radius: 20%;
+}
+/* CUSTOMIZE THE CAROUSEL
+-------------------------------------------------- */
+
+
+/* Carousel base class */
+
+.carousel {
+    height: 440px;
+    margin-bottom: 60px;
+}
+
+
+/* Since positioning the image, we need to help out the caption */
+
+.carousel-caption {
+    z-index: 10;
+}
+
+
+/* Declare heights because of positioning of img element */
+
+.carousel .item {
+    height: 440px;
+    /* background-color: #777; */
+}
+
+.carousel-inner > .item > img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    height: 500px;
+}
+
+.carousel-inner > .item > .container > .carousel-caption > img.carousel-item-image {
+    width: 250px;
+    height: 250px;
+}
+.session-container{
+    background-color: #323EB9;
+    text-align: center;
+}
+.session-container h1{
+    color:#fff;
+}
+.speaker-container{
+    text-align: center;
+}
+.speaker-container h1{
+    color:#fff;
+}
+
+.session-list li{
+    margin-right:10px;
+    padding:5px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
