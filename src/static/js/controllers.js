@@ -183,7 +183,7 @@ function createConferenceCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr)
     vm.goBack = function() {
         window.history.back();
     }
-    $scope.iCreate = true;
+    $scope.isCreate = true;
     /**
      * The conference object being edited in the page.
      * @type {{}|*}
@@ -286,7 +286,7 @@ function editConferenceCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr, $
     vm.goBack = function() {
         window.history.back();
     }
-    $scope.iCreate = false;
+    $scope.isCreate = false;
     /**
      * The conference object being edited in the page.
      * @type {{}|*}
@@ -1323,8 +1323,8 @@ function createConfSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $rout
 
                     vm.conference = resp.result;
                     vm.createAllowed = $scope.profile.displayName === vm.conference.organizerDisplayName;
-                    vm.minDate = vm.getDateFromString(vm.conference.startDate)
-                    vm.maxDate = vm.getDateFromString(vm.conference.endDate).addHours(23, 59, 0, 0);
+                    vm.minDate = moment(vm.conference.startDate).toDate().setHours(0, 0, 0, 0);
+                    vm.maxDate = moment(vm.conference.endDate).toDate().setHours(23, 59, 0, 0);
                     if (!vm.createAllowed) {
                         toastr.warning('Only Conference Organizers can Create Sessions');
                     }
