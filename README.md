@@ -25,6 +25,7 @@ Multiple enhancements have been made to the provided base web application and th
 1. [Code Documentation ](#code-documentation)
     - [Folder Structure ](#folder-structure)
     - [ConferenceApi](#conferenceapi)
+    - [Tasks and Crons](#tasks-and-crons)
 1. [Database Structure ](#database-structure)
 
 ---
@@ -244,14 +245,17 @@ Acording to the ndb [doccumentation][7] the datastore enforces some restrictions
 "Limitations: The Datastore enforces some restrictions on queries. Violating these will cause it to raise exceptions. For example, **combining too many filters, using inequalities for multiple properties, or combining an inequality with a sort order on a different property are all currently disallowed. Also filters referencing multiple properties sometimes require secondary indexes to be configured.** "
 
 **Proposed and Implemented Soultion:** After going through multiple documents and web forums I implemented the following solution.
-	1. Query the sessions before the specified time 7PM(19:00) in this case and store it a variable timeQry. remember to fetch only the keys.
 
-	1. Query the sessions which are not of the specified type  "WORKSHOP" in this case and store it a variable typeQry. remember to fetch only the keys.
+	* Query the sessions before the specified time 7PM(19:00) in this case and store it a variable timeQry. remember to fetch only the keys.
 
-	1. Create a set by intersection the queries `set(timeQry).intersection(typeQry)` 
-	1. use `ndb.get_multi(set(timeQry).intersection(typeQry))` fetch all the intersected sessions
+	* Query the sessions which are not of the specified type  "WORKSHOP" in this case and store it a variable typeQry. remember to fetch only the keys.
+
+	* Create a set by intersection the queries `set(timeQry).intersection(typeQry)` 
+
+	* Use `ndb.get_multi(set(timeQry).intersection(typeQry))` fetch all the intersected sessions
+
 	
-The API method `getAllSessionsBeforeTime' allows the user to pass in any datetime and type of session to apply the above logicand return relevant sessions.
+The API method `getAllSessionsBeforeTime` allows the user to pass in any datetime and type of session to apply the above logicand return relevant sessions.
 
 
 I choose this approach because
@@ -799,7 +803,46 @@ Gets all the sessions starting within a specified time delta.
 ---
 
 
+##Tasks And Crons
 
+`main.py` file contains the methods required by the different tasks queues and configured cron jobs
+
+
+### class SetAnnouncementHandler(webapp2.RequestHandler):
+Handles the anouncement get request that come through the CRON. Calls the static method in the conference api `ConferenceApi._cacheAnnouncement()`
+
+---
+
+### class SetStartingSoon(webapp2.RequestHandler):
+Handles the starting soon get request that come through the CRON. Calls the static method in conference api `ConferenceApi._cacheStartingSoon()`
+
+---
+
+## class SetNewSpeakerSpecial(webapp2.RequestHandler):
+Handles the task for setting the featured speaker. Call the static method in the API `ConferenceApi._cacheFeaturedSpeaker(self.request)`
+
+---
+
+### class SendConfirmationEmailHandler(webapp2.RequestHandler):
+Handles the post request for sending emails for the conference creattion
+
+---
+
+### class SendSpeakerCreated(webapp2.RequestHandler):
+Handles the post request for sending emails when a speaker registers 
+
+---
+
+### class SendSessionEmailHandler(webapp2.RequestHandler):
+Handles the post request for sending emails for the session creattion 
+
+---
+
+### class SendSpeakerEmailHandler(webapp2.RequestHandler):
+Handles the post request for sending emails for the session creattion to the speaker
+
+**[Back to top](#table-of-contents)**
+---
 
 
 ##Database Structure
@@ -874,20 +917,20 @@ The entity to store the Profile information
 
 
 [APPURL]: https://sams-conference-app.appspot.com "Sams Conference App"
-[homepage]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/homepage.jpg "Home Page"
-[announce]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/announcement.jpg "Announcements"
-[fspkr1]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/featuredspeaker.jpg "Features Speaker"
-[fspkr2]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/featuredspeaker2.jpg "Features Speaker"
-[regspkr]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/registerspeaker.jpg "Register Speaker"
-[crtsession]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/sessioncreate.jpg "Create Session"
-[sessions]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/sessions.jpg "Sessions"
-[spkr]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/speakers.jpg "Speakers"
-[spkrses]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/speakerssession.jpg "Speaker Sessions"
-[startson]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/startingsoon.jpg "Starting Soon"
-[strson2]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/startingsoon2.jpg "Startig soon data"
-[wishlist]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/wishlist.jpg "Register Speaker"
-[fstr]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/folderstructure.jpg "Folder Structure"
-[dbdesign]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/databasediag.jpg "Database Design"
+[homepage]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/homepage.jpg "Home Page"
+[announce]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/announcement.jpg "Announcements"
+[fspkr1]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/featuredspeaker.jpg "Features Speaker"
+[fspkr2]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/featuredspeaker2.jpg "Features Speaker"
+[regspkr]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/registerspeaker.jpg "Register Speaker"
+[crtsession]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/sessioncreate.jpg "Create Session"
+[sessions]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/sessions.jpg "Sessions"
+[spkr]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/speakers.jpg "Speakers"
+[spkrses]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/speakerssession.jpg "Speaker Sessions"
+[startson]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/startingsoon.jpg "Starting Soon"
+[strson2]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/startingsoon2.jpg "Startig soon data"
+[wishlist]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/wishlist.jpg "Register Speaker"
+[fstr]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/folderstructure.jpg "Folder Structure"
+[dbdesign]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/databasediag.jpg "Database Design"
 [1]: https://developers.google.com/appengine
 [2]: http://python.org
 [3]: https://developers.google.com/appengine/docs/python/endpoints/
