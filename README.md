@@ -14,7 +14,6 @@ multiple enhancements have been made to the provided base application to accomod
     - [Prerequisites ](#prerequisites)
     - [Local Application Setup ](#local-appliction-setup)   
     - [Application Details](#application-Details)   
-    - [Running The Application ](#running-the-application)
 1. [Assumptions](#assumptions)
 1. [Extra Credit Features](#extra-credit-features)
 1. [Code Documentation ](#code-documentation)
