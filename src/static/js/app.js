@@ -1,5 +1,4 @@
 'use strict';
-
 /**
  * @ngdoc object
  * @name conferenceApp
@@ -22,6 +21,11 @@ config(['$routeProvider', 'toastrConfig',
         when('/conference/create', {
             templateUrl: '/partials/create_conferences.html',
             controller: 'CreateConferenceCtrl',
+            controllerAs: 'vm'
+        }).
+        when('/conference/edit/:websafeKey', {
+            templateUrl: '/partials/create_conferences.html',
+            controller: 'EditConferenceCtrl',
             controllerAs: 'vm'
         }).
         when('/conference/detail/:websafeConferenceKey', {
@@ -73,8 +77,6 @@ config(['$routeProvider', 'toastrConfig',
         otherwise({
             redirectTo: '/home'
         });
-
-
         angular.extend(toastrConfig, {
             autoDismiss: true,
             timeOut: 1500,
@@ -89,7 +91,6 @@ config(['$routeProvider', 'toastrConfig',
         });
     }
 ]);
-
 /**
  * @ngdoc filter
  * @name startFrom
@@ -111,8 +112,6 @@ app.filter('startFrom', function() {
     }
     return filter;
 });
-
-
 /**
  * @ngdoc constant
  * @name HTTP_ERRORS
@@ -124,8 +123,6 @@ app.filter('startFrom', function() {
 app.constant('HTTP_ERRORS', {
     'UNAUTHORIZED': 401
 });
-
-
 /**
  * @ngdoc service
  * @name oauth2Provider
@@ -136,14 +133,13 @@ app.constant('HTTP_ERRORS', {
  */
 app.factory('oauth2Provider', function($uibModal) {
     var oauth2Provider = {
-        CLIENT_ID: '453719718803-kpltcg8jlmo351vs7vmrch8gm2caf5g2.apps.googleusercontent.com',
-        SCOPES: 'email profile',
-        signedIn: false
-    }
-
-    /**
-     * Calls the OAuth2 authentication method.
-     */
+            CLIENT_ID: '453719718803-kpltcg8jlmo351vs7vmrch8gm2caf5g2.apps.googleusercontent.com',
+            SCOPES: 'email profile',
+            signedIn: false
+        }
+        /**
+         * Calls the OAuth2 authentication method.
+         */
     oauth2Provider.signIn = function(callback) {
         gapi.auth.signIn({
             'clientid': oauth2Provider.CLIENT_ID,
@@ -154,7 +150,6 @@ app.factory('oauth2Provider', function($uibModal) {
             'callback': callback
         });
     };
-
     /**
      * Logs out the user.
      */
@@ -166,7 +161,6 @@ app.factory('oauth2Provider', function($uibModal) {
         })
         oauth2Provider.signedIn = false;
     };
-
     /**
      * Shows the modal with Google+ sign in button.
      *
@@ -179,6 +173,5 @@ app.factory('oauth2Provider', function($uibModal) {
         });
         return modalInstance;
     };
-
     return oauth2Provider;
 });

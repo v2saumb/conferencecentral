@@ -28,12 +28,16 @@ conferenceApp.controllers.controller('ViewAllSessionsCtrl', viewAllSessionsCtrl)
 viewAllSessionsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', '$routeParams', 'toastr', '$filter'];
 
 
+
 conferenceApp.controllers.controller('CarouselContentsCtrl', carouselContentsCtrl);
 carouselContentsCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', 'toastr', '$interval'];
 
 
 conferenceApp.controllers.controller('CreateConferenceCtrl', createConferenceCtrl);
 createConferenceCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', 'toastr'];
+
+conferenceApp.controllers.controller('EditConferenceCtrl', editConferenceCtrl);
+editConferenceCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', 'toastr', '$routeParams'];
 
 conferenceApp.controllers.controller('MyProfileCtrl', myProfileCtrl)
 myProfileCtrl.$inject = ['$scope', '$log', 'oauth2Provider', 'HTTP_ERRORS', 'toastr'];
@@ -179,6 +183,7 @@ function createConferenceCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr)
     vm.goBack = function() {
         window.history.back();
     }
+    $scope.iCreate = true;
     /**
      * The conference object being edited in the page.
      * @type {{}|*}
@@ -237,6 +242,10 @@ function createConferenceCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr)
     $scope.isValidConference = function(conferenceForm) {
         return !conferenceForm.$invalid && $scope.isValidMaxAttendees() && $scope.isValidDates() && $scope.isValidStartDate();
     }
+    /*placeholder */
+    $scope.init = function() {
+
+    }
     /**
      * Invokes the conference.createConference API.
      *
@@ -248,6 +257,137 @@ function createConferenceCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr)
         }
         $scope.loading = true;
         gapi.client.conference.createConference($scope.conference).
+        execute(function(resp) {
+            $scope.$apply(function() {
+                $scope.loading = false;
+                if (resp.error) {
+                    // The request has failed.
+                    var errorMessage = resp.error.message || '';
+                    toastr.warning('Failed to update a conference : ' + errorMessage);
+                    if (resp.code && resp.code == HTTP_ERRORS.UNAUTHORIZED) {
+                        oauth2Provider.showLoginModal();
+                        return;
+                    }
+                } else {
+                    // The request has succeeded.
+                    toastr.success('The conference has been updated : ' + resp.result.name);
+                    $scope.submitted = false;
+                    $scope.conference = {};
+                    $log.info($scope.messages + ' : ' + JSON.stringify(resp.result));
+                }
+            });
+        });
+    };
+};
+
+
+function editConferenceCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, toastr, $routeParams) {
+    var vm = this;
+    vm.goBack = function() {
+        window.history.back();
+    }
+    $scope.iCreate = false;
+    /**
+     * The conference object being edited in the page.
+     * @type {{}|*}
+     */
+    $scope.conference = $scope.conference || {};
+    /**
+     * Holds the default values for the input candidates for city select.
+     * @type {string[]}
+     */
+    $scope.cities = ['Chicago', 'London', 'Paris', 'San Francisco', 'Tokyo'];
+    /**
+     * Holds the default values for the input candidates for topics select.
+     * @type {string[]}
+     */
+    $scope.topics = ['Medical Innovations', 'Programming Languages', 'Web Technologies', 'Movie Making', 'Health and Nutrition'];
+    /**
+     * Tests if the arugment is an integer and not negative.
+     * @returns {boolean} true if the argument is an integer, false otherwise.
+     */
+    /*min date for the calander*/
+    $scope.minDate = new Date();
+    $scope.isValidMaxAttendees = function() {
+        if (!$scope.conference.maxAttendees || $scope.conference.maxAttendees.length == 0) {
+            return true;
+        }
+        return /^[\d]+$/.test($scope.conference.maxAttendees) && $scope.conference.maxAttendees >= 0;
+    }
+
+    $scope.isValidStartDate = function() {
+        var today = new Date().setHours(0, 0, 0, 0);
+        if (!$scope.conference.startDate) {
+            return true;
+        } else {
+            if (angular.isDate($scope.conference.startDate)) {
+                $scope.conference.startDate.setHours(0, 0, 0, 0);
+
+            } else {
+                $scope.conference.startDate = moment($scope.conference.startDate, 'YYYY-MM-DD').toDate();
+                $scope.conference.startDate.setHours(0, 0, 0, 0);
+            }
+        }
+        return today <= $scope.conference.startDate;
+    }
+    /**
+     * Tests if the conference.startDate and conference.endDate are valid.
+     * @returns {boolean} true if the dates are valid, false otherwise.
+     */
+    $scope.isValidDates = function() {
+        var today = new Date();
+
+        if (!$scope.conference.endDate) {
+            return true;
+        }
+        if ($scope.conference.startDate && !$scope.conference.endDate) {
+            return true;
+        }
+
+        return $scope.conference.startDate <= $scope.conference.endDate;
+    }
+    /**
+     * Tests if $scope.conference is valid.
+     * @param conferenceForm the form object from the create_conferences.html page.
+     * @returns {boolean|*} true if valid, false otherwise.
+     */
+    $scope.isValidConference = function(conferenceForm) {
+        console.log(!conferenceForm.$invalid, $scope.isValidMaxAttendees(), $scope.isValidDates(), $scope.isValidStartDate())
+        return !conferenceForm.$invalid && $scope.isValidMaxAttendees() && $scope.isValidDates() && $scope.isValidStartDate();
+    }
+    $scope.init = function() {
+        $scope.loading = true;
+        gapi.client.conference.getConference({
+            websafeConferenceKey: $routeParams.websafeKey
+        }).execute(function(resp) {
+            $scope.$apply(function() {
+                $scope.loading = false;
+                if (resp.error) {
+                    // The request has failed.
+                    var errorMessage = resp.error.message || '';
+                    toastr.warning('Failed to get the conference : ' + $routeParams.websafeKey + ' ' + errorMessage);
+                } else {
+                    $scope.conference = resp.result;
+                    $scope.conference.startdate = moment($scope.conference.startDate, 'YYYY-MM-DD').toDate();
+                    $scope.conference.endDate = moment($scope.conference.endDate, 'YYYY-MM-DD').toDate();
+                }
+            });
+        });
+        $scope.loading = true;
+    };
+    /**
+     * Invokes the conference.createConference API.
+     *
+     * @param conferenceForm the form object.
+     */
+    $scope.updateConference = function(conferenceForm) {
+        if (!$scope.isValidConference(conferenceForm)) {
+            return;
+        }
+        $scope.loading = true;
+        $scope.requestParams = {};
+        $scope.conference.websafeConferenceKey = $routeParams.websafeKey;
+        gapi.client.conference.updateConference($scope.conference).
         execute(function(resp) {
             $scope.$apply(function() {
                 $scope.loading = false;

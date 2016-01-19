@@ -95,7 +95,7 @@ function confSessionCtrl($scope, toastr) {
                 if (resp.error) {
                     if (resp.code && resp.code == 409) {
                         var errorMessage = resp.error.message || '';
-                        toastr.error('Error:' + errorMessage);
+                        toastr.warning('Error:' + errorMessage);
                     }
                 } else {
                     if ($scope.autoArchive) {

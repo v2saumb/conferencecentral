@@ -59,6 +59,10 @@ handlers:       # static then dynamic
   script: main.app
   login: admin
 
+- url: /tasks/sendemail/speakercreated
+  script: main.app
+  login: admin
+
 libraries:
 
 - name: endpoints

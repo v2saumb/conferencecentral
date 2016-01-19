@@ -1,4 +1,4 @@
-<div >
+<div ng-init="init()">
     <div class="row">
         <div class="col-lg-12">
             <img class="spinner" src="/img/ajax-loader.gif" ng-show="loading"/>
@@ -77,8 +77,11 @@
                 <button ng-click="vm.goBack()" class="btn btn-success"
                 ng-disabled="loading "><i class="fa fa-caret-left"></i> Back
                 </button>
-                <button ng-click="createConference(conferenceForm)" class="btn btn-primary"
+                <button ng-if="isCreate" ng-click="createConference(conferenceForm)" class="btn btn-primary"
                 ng-disabled="!isValidConference(conferenceForm) || loading">Create
+                </button>
+                <button ng-if="!isCreate" ng-click="updateConference(conferenceForm)" class="btn btn-primary"
+                ng-disabled="!isValidConference(conferenceForm) || loading">Save
                 </button>
                 
             </form>

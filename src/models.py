@@ -96,7 +96,7 @@ class Profile(ndb.Model):
 
 
 class ConfSessionForm(messages.Message):
-"""Session Form for inbound and outboud conferene sessions"""
+    """Session Form for inbound and outboud conferene sessions"""
     session_name = messages.StringField(1)
     highlights = messages.StringField(2)
     speaker = messages.StringField(3)
@@ -110,7 +110,7 @@ class ConfSessionForm(messages.Message):
 
 
 class ConfSessionSearchForm(messages.Message):
-""" Sessions search form."""
+    """ Sessions search form."""
     start_date = messages.StringField(1, required=True)
     end_date = messages.StringField(2)
     session_type = messages.StringField(3)
@@ -118,13 +118,13 @@ class ConfSessionSearchForm(messages.Message):
 
 
 class ConfSessionTask3SearchForm(messages.Message):
-""" Sessions search form for the problem in Task 3."""
+    """ Sessions search form for the problem in Task 3."""
     start_time = messages.StringField(1, required=True)
     session_type = messages.StringField(2, required=True)
 
 
 class FeaturedSpeakerForm(messages.Message):
-"""Form to return featured speaker"""
+    """Form to return featured speaker"""
     confName = messages.StringField(1)
     speakerName = messages.StringField(2)
     sessions = messages.StringField(3, repeated=True)

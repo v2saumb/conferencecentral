@@ -47,6 +47,21 @@ class SendConfirmationEmailHandler(webapp2.RequestHandler):
         )
 
 
+class SendSpeakerCreated(webapp2.RequestHandler):
+    """ Handles the post request for sending emails when a speaker registers """
+
+    def post(self):
+        """Send email confirming Conference creation."""
+        mail.send_mail(
+            'noreply@%s.appspotmail.com' % (
+                app_identity.get_application_id()),     # from
+            self.request.get('email'),                  # to
+            'You Registered as a Speaker!',            # subj
+            """'Hi,  Welcome ! your registration as speaker was successful. 
+            We will assign you some sessions soon"""
+        )
+
+
 class SendSessionEmailHandler(webapp2.RequestHandler):
     """ Handles the post request for sending emails for the session creattion """
 
@@ -88,5 +103,6 @@ app = webapp2.WSGIApplication([
     ('/crons/set_starting_soon', SetStartingSoon),
     ('/tasks/sendemail/createconference', SendConfirmationEmailHandler),
     ('/tasks/sendemail/createsession', SendSessionEmailHandler),
-    ('/tasks/sendemail/speakersessioncreated', SendSpeakerEmailHandler)
+    ('/tasks/sendemail/speakersessioncreated', SendSpeakerEmailHandler),
+    ('/tasks/sendemail/speakercreated', SendSpeakerCreated)
 ], debug=True)

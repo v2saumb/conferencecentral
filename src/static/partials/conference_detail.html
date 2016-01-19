@@ -1,4 +1,4 @@
-<div ng-controller="ConferenceDetailCtrl">
+<div >
     <div class="row">
         <div class="col-lg-12">
             <img class="spinner" src="/img/ajax-loader.gif" ng-show="loading"/>
@@ -56,6 +56,11 @@
         <div class="col-md-2">
             <a class="btn btn-primary"  href="#/conference/createsession/{{conference.websafeKey}}"
             ng-disabled=" vm.isCreateAllowed()|| loading" ng-hide="!getSignedInState()"><i class="fa fa-plus"></i> Create Sessions</a>
+            
+        </div>
+                <div class="col-md-2">
+            <a class="btn btn-info"  href="#/conference/edit/{{conference.websafeKey}}"
+            ng-disabled=" vm.isCreateAllowed() || loading" ng-hide="!getSignedInState()"><i class="fa fa-pencil"></i> Edit Conference </a>
             
         </div>
         <div class="col-md-8">

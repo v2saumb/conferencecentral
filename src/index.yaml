@@ -123,3 +123,7 @@ indexes:
   properties:
   - name: seatsAvailable
   - name: name
+
+- kind: Profile
+  properties:
+  - name: displayName
