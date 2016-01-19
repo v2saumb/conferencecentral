@@ -13,10 +13,6 @@ indexes:
 - kind: ConfSession
   properties:
   - name: date
-
-- kind: ConfSession
-  properties:
-  - name: date
   - name: session_name
   - name: type_of_session
   - name: venue
@@ -43,16 +39,8 @@ indexes:
 - kind: ConfSession
   properties:
   - name: start_time
-
-- kind: ConfSession
-  properties:
-  - name: start_time
   - name: date
     direction: desc
-
-- kind: ConfSession
-  properties:
-  - name: type_of_session
 
 - kind: ConfSession
   properties:
@@ -123,7 +111,3 @@ indexes:
   properties:
   - name: seatsAvailable
   - name: name
-
-- kind: Profile
-  properties:
-  - name: displayName

@@ -1,8 +1,10 @@
 ## Introduction
 Sams Conference App is conference organization application that exists on the web. There are two parts of the appliation 
+
 1. The ConferenceApi
 1. The Web Application
-multiple enhancements have been made to the provided base application to accomodate the new features and functionality 
+
+Multiple enhancements have been made to the provided base web application and the api to accomodate the new features and functionality 
 
 ---
 
@@ -13,9 +15,13 @@ multiple enhancements have been made to the provided base application to accomod
 1. [Setup ](#setup)
     - [Prerequisites ](#prerequisites)
     - [Local Application Setup ](#local-appliction-setup)   
-    - [Application Details](#application-Details)   
+    - [Application Details](#application-etails)   
 1. [Assumptions](#assumptions)
 1. [Extra Credit Features](#extra-credit-features)
+1. [Explanations](#explanations)
+	- [Speaker Implementation](#speaker-implementation)
+	- [Additional Queries](#additional-queries)
+	- [Query Problem](#query-problem)
 1. [Code Documentation ](#code-documentation)
     - [Folder Structure ](#folder-structure)
     - [ConferenceApi](#conferenceapi)
@@ -25,99 +31,87 @@ multiple enhancements have been made to the provided base application to accomod
 
 ###Program Features.
 	
-* ** Responsive Web Interface: ** The web interface for the application is responsive and supports multiple screen sizes.
+* **Responsive Web Interface:** The web interface for the application is responsive and supports multiple screen sizes.
 
-![alt text][hpage]
-
-* ** Administration Module: ** Application supports an administration module. If your are logged in as an Administrator you can add new categories and modify items posted by any user. Admin user can enable and disable users, categories and items. 
-
-![alt text][admmnu]
+![alt text][homepage]
 
 ---
 
-![alt text][loginli]
+* **Information Carousel:**The home page has a carousel that displays useful  announcements.
+
+![alt text][announce]
 
 ---
 
-![alt text][adminLogin]
+* **Information Carousel:** The home page has a carousel that displays sessions starting sooon.
+
+![alt text][startson]
+
+![alt text][strson2]
 
 ---
 
-   ** Default Login Information for Administrator **
+* **Information Carousel:** The home page has a carousel that displays featured speaker.
 
-| User Name | admin@itemcatalog.com |
-|:---------:|:---------------------:|
-|  Password |         123456        | 
 
-* **Sub-Categories: ** Application supports one level of sub categories Like the category Electronics and Computers  can have sub categories Headphones, Video Games , Laptops and Tablets.
+![alt text][fspkr1]
 
-![alt text][catli]
+![alt text][fspkr2]
 
 ---
 
-* **Pagination: ** Pagination of results for easy readability on most of the pages.
+* **Register Speaker:** New Screen to register speaker
 
-![alt text][itmli]
-
----
-
-* **Moderation: ** Administrator can enable and disable users, categories and items. The disabled items and categories will not show up in the catalog but will still be available in the users 
-
-![alt text][editu]
+![alt text][regspkr]
 
 ---
 
-![alt text][edititm]
+* **Create Sessions:** New Screen to create sessions
+
+
+![alt text][crtsession]
 
 ---
 
-![alt text][catli]
+* **View Sessions:** New Screen to view sessions
+
+
+![alt text][sessions]
 
 ---
 
-* **Third Party Login :** The application allows you to use you google account to login.
 
-![alt text][loginli]
+* **View Speakers:** New Screen to view speakers
 
----
 
-* **CRUD :** The application allows a logged in user to perform CRUD operations on their items. An administrator can update all items.
-
-![alt text][editu]
+![alt text][spkr]
 
 ---
 
-![alt text][delfonf]
+
+* **View Speaker Sessions:** New Screen to view speaker Sessions
+
+
+![alt text][spkrses]
 
 ---
 
-* **Item Images :** The application allows a logged in user to specify a picture / image url for there items these images are used in the listings.
 
-![alt text][itmviewnoli]
 
----
+* **View Users Wishlist:** New Screen to view users wishlist
 
-![alt text][itmvli]
 
-* **Latest Items :** The application displays latest items in a carousel on the home page. The number of Items and the cut of date can be changed in code. The default values are 7 days and 9 Items.
-
-![alt text][hpage]
+![alt text][wishlist]
 
 ---
 
-* **XML Catalog :** The application has an option to get the entire catalog as an XML. You can use the following URL ** http://localhost:8000/catalog.xml ** or using the Administration menu This is assuming the server is running on port 8000 
 
+* **Other Screen Changes:**  Other screens have been modified to accomodate the new functionality
+A new notification system has been added for floating error messages.
 
-* **JSON Catalog :** The application has an option to get the entire catalog as an XML. You can use the following URL ** http://localhost:8000/catalog.json ** or using the Administration menu This is assuming the server is running on port 8000 
+* **Email Confirmations :** Email confirmations have been added when session , speaker, conference is created/ modified
 
-* **ATOM Feed :** The application has an option to get an ATOM RSS feed for the latest items from the catalog as an XML. You can use the following URL ** http://localhost:8000/newitems.atom ** or using the Administration menu This is assuming the server is running on port 8000 
-
-![alt text][admmnu]
-
-* **Readable URLs : ** most of the relevant urls are readable.
-
-
----
+* **Task Queues :** Featured Speaker functionalityhas been implemented using the task queues
 
 
 ## Setup
@@ -160,15 +154,10 @@ Following are some of the prerequsits for the development environment
 1. The start date and end date validation take in to account time till 23:59
 1. Only the organizers can update edit and create sessions for the conference.
 1. The front end application is updated but does not use all the endpoints created through the project
-
-
-the bootstrap updated
-changes in the UI
-added sessions 
-added speakers 
-view sessions by speakers
-shows who is logged in 
-
+1. One session can have only one session.
+1. Necessary modifications can be made to the provided UI
+1. UI updates are optional and not all features need to be implemented in the UI
+1. Test cases need not be prepared for the Web and API.
 
 **[Back to top](#table-of-contents)**
 
@@ -176,17 +165,107 @@ shows who is logged in
 
 ## Extra Credit Features
 
-1. ** Sub-Categories: ** Application supports one level of sub categories Like the category Electronics and Computers  can have sub categories Headphones, Video Games , Laptops and Tablets.
-1. ** Pagination: ** Pagination of results for easy readability on most of the pages.
-1. ** Moderation: ** Administrator can enable and disable users, categories and items. The disabled items and categories will not show up in the catalog but will still be available in the users 
-1. ** Item Images :** The application allows a logged in user to specify a picture / image url for there items these images are used in the listings.
-1. ** Latest Items :** The application displays latest items in a carousel on the home page. The number of Items and the cut of date can be changed in code. The default values are 7 days and 9 Items.
-1. ** XML Catalog :** The application has an option to get the entire catalog as an XML. You can use the following URL ** http://localhost:8000/catalog.xml ** this is assuming the server is running on port 8000
-1. ** JSON Catalog :** The application has an option to get the entire catalog as an JSON. You can use the following URL ** http://localhost:8000/catalog.json ** this is assuming the server is running on port 8000
-1. ** ATOM Feed :** The application has an option to get an ATOM RSS feed for the latest items from the catalog as an XML. You can use the following URL ** http://localhost:8000/newitems.atom ** this is assuming the server is running on port 8000
+1. **Separate Entity for Speakers:** A separate entity has been created for the speakers
+1. **Design Choice :** Design Choice included in the readme.
+1. **UI Changes:** All the new features added to the api have also been added to the UI of the application.
+1. **Email Confirmations:** Various confirmation mails have been added to the  application.
+1. **Explaination for the Problem:** Readme includes the explanation for the problem.
+
 **[Back to top](#table-of-contents)**
 
 ---
+
+## Explanations
+
+### Speaker Implementation
+
+* **Task 1 Design Choices**
+
+The diagram below shows the different entities and their symbolic relationship.
+
+![alt text][dbdesign]
+
+
+**Speakers**
+Following are some of the reason why I created a separate Speaker entity
+
+ * A separate entity for Speakers for capturing a more information about them.
+ * Separate entity allows to show user the differnt speakers at the time of session creation.
+ * Asumed that a session can have only one speaker.
+ * Separate entity allows me to search the session using the speaker keys.
+ * Any registered user can be registered as a speaker.
+ * Keeping only the speaker specific detail in this entity other information is picked from the user profile.
+ * This also helps me to send the speaker data only what is required. 
+ * This approach allowed me to add a whole new section in the UI for showing / filtering session by speaker
+ * There is no cleanup code for this phase of the project. meaning there is no code to cleanup the old conferences and sessions whose end date has been reached.
+ * When a conference is updated the start date has to be changed to min current date.
+
+
+**How Speakers Are Linked Sessions**
+ * When a new session is created one of the Speaker key is sent as part of the request. 
+ * The speaker key is saved in the speaker field of the entity. The indexes have been updated to allow easy query of the data.
+ * The session is a child of the Conference. 
+ * This makes it easy to search sesssions for a conference.
+
+### Additional Queries
+
+* **Task 3 Additional Queries**
+
+* **Query 1 Sessions Starting Soon**
+ A new query has been added to fetch 5 of the sessions starting at a configurable interval. The query is implemented in the API and appliction. This will allow the users to know what sessions are starting say in next 30 minutes. This query allows the user to select the sessions for date and time.
+ 	* To make this work I have added the start_time to the start_date befoe storing the information in the datastore
+
+
+ * **API implimentaion**  a new method 'getSessionsStartingSoon' has been added to to the api where the user can pass in the start date and the time interval. The system fetches the sessions if any within the specified time interval.
+
+ * **MEMCACHE implimentaion**  a new cron task has been added to fire the similar query to fetch sessions if any within the specified time interval that are about start soon and add them to the memcache using the method `_cacheStartingSoon`. The web application has been updated to get this information out of memcache using the `getSessionsStartingSoonCached` method and show the same in the Crrousel on the home page.
+
+* **Query 3 Sessions Within Date Range**
+ A new query has been added to fetch all the sesssion in decending order of date and time within a specified start-date and end-date. The query is implemented in the API and appliction. 
+ * The UI uses this query and allows the user to easly filter the sessions for today , this week, this month, and this year.
+
+ `getAllFutureSessions` method is flexible enough that it will work only if start date is provided. In this case it will fetch the sessions form the passed start-date
+
+* **Query 2 Sessions by speaker name**
+ A new query has been added to the API to find the sessions for a speaker by speaker name. This will be really useful to searh the session if the user only knows the speaker name. The is not emplement in the ewb application yet.
+
+ `getSessionsBySpeaker()`  method works both for speaker keys and speaker name
+
+
+### Query Problem
+
+* **Task 3 Query Problem**
+
+**Problem:** Let’s say that you don't like workshops and you don't like sessions after 7 pm. How would you handle a query for all non-workshop sessions before 7 pm? What is the problem for implementing this query? What ways to solve it did you think of?
+
+**Reason of the Problem**
+Acording to the ndb [doccumentation][7] the datastore enforces some restrictions on queries
+
+"Limitations: The Datastore enforces some restrictions on queries. Violating these will cause it to raise exceptions. For example, **combining too many filters, using inequalities for multiple properties, or combining an inequality with a sort order on a different property are all currently disallowed. Also filters referencing multiple properties sometimes require secondary indexes to be configured.** "
+
+**Proposed and Implemented Soultion:** After going through multiple documents and web forums I implemented the following solution.
+	1. Query the sessions before the specified time 7PM(19:00) in this case and store it a variable timeQry. remember to fetch only the keys.
+
+	1. Query the sessions which are not of the specified type  "WORKSHOP" in this case and store it a variable typeQry. remember to fetch only the keys.
+
+	1. Create a set by intersection the queries `set(timeQry).intersection(typeQry)` 
+	1. use `ndb.get_multi(set(timeQry).intersection(typeQry))` fetch all the intersected sessions
+	
+The API method `getAllSessionsBeforeTime' allows the user to pass in any datetime and type of session to apply the above logicand return relevant sessions.
+
+
+I choose this approach because
+
+* This required minimum change in the application.
+* Since this is a class project I do not foresee a large increase in the data
+
+**Disadvantages of this approach**  
+
+* As the amount of data increases this approach might not be a good solution as we will be working on large data sets
+* The performance of the app might go down in case there is a large increase in the data.
+
+
+
 ##Code Documentation
 
 ###Folder Structure
@@ -795,22 +874,19 @@ The entity to store the Profile information
 
 
 [APPURL]: https://sams-conference-app.appspot.com "Sams Conference App"
-[editus]: https://github.com/v2saumb/catalog/blob/master/docs/images/userlist.gif "Edit users"
-[loginli]: https://github.com/v2saumb/catalog/blob/master/docs/images/login-options.gif "Login Options"
-[itmvli]: https://github.com/v2saumb/catalog/blob/master/docs/images/viewitems-loggedin.gif "Logged in Items View"
-[itmviewnoli]: https://github.com/v2saumb/catalog/blob/master/docs/images/itemview.gif "Items view"
-[itmnoli]: https://github.com/v2saumb/catalog/blob/master/docs/images/items-nologin.gif "Items No Login"
-[itmli]: https://github.com/v2saumb/catalog/blob/master/docs/images/items-loggedin.gif "Items Logged in"
-[edititm]: https://github.com/v2saumb/catalog/blob/master/docs/images/item-edit.gif "Edit Items"
-[editu]: https://github.com/v2saumb/catalog/blob/master/docs/images/edit-user.gif "Edit User"
-[delfonf]: https://github.com/v2saumb/catalog/blob/master/docs/images/delete-conf.gif "Delete Confirmation"
-[catnoli]: https://github.com/v2saumb/catalog/blob/master/docs/images/cats-nologin.gif "Catagory Screen Without Login"
-[catli]: https://github.com/v2saumb/catalog/blob/master/docs/images/cat-loggedin.gif "Category Screen Logged In"
-[catitm]: https://github.com/v2saumb/catalog/blob/master/docs/images/cat-items.gif "Category Items Screen"
-[admmnu]: https://github.com/v2saumb/catalog/blob/master/docs/images/admin-menu.gif "Admin Menu"
-[hpage]: https://github.com/v2saumb/catalog/blob/master/docs/images/homepage.gif "Home Page"
+[homepage]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/homepage.jpg "Home Page"
+[announce]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/announcement.jpg "Announcements"
+[fspkr1]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/featuredspeaker.jpg "Features Speaker"
+[fspkr2]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/featuredspeaker2.jpg "Features Speaker"
+[regspkr]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/registerspeaker.jpg "Register Speaker"
+[crtsession]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/sessioncreate.jpg "Create Session"
+[sessions]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/sessions.jpg "Sessions"
+[spkr]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/speakers.jpg "Speakers"
+[spkrses]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/speakerssession.jpg "Speaker Sessions"
+[startson]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/startingsoon.jpg "Starting Soon"
+[strson2]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/startingsoon2.jpg "Startig soon data"
+[wishlist]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/wishlist.jpg "Register Speaker"
 [fstr]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/folderstructure.jpg "Folder Structure"
-[adminLogin]: https://github.com/v2saumb/catalog/blob/master/docs/images/admin-login.gif "Admin Login Screen"
 [dbdesign]: https://github.com/v2saumb/conferencecentral/blob/feature/speakers/docs/imgs/databasediag.jpg "Database Design"
 [1]: https://developers.google.com/appengine
 [2]: http://python.org
@@ -818,34 +894,10 @@ The entity to store the Profile information
 [4]: https://console.developers.google.com/
 [5]: https://localhost:8080/
 [6]: https://developers.google.com/appengine/docs/python/endpoints/endpoints_tool
-
-## Products
-- [App Engine][1]
-
-## Language
-- [Python][2]
-
-## APIs
-- [Google Cloud Endpoints][3]
+[7]: https://cloud.google.com/appengine/docs/python/ndb/queries
 
 
 
 
 
 
-
-I Created a separate entity for Speakers for capturing a more information.
-Any Logged in user can register as a speaker.
-Sessions can be created under a conference and must have  a speaker
-There are methods in in the app to filter the sessions based on type speaker conference etc.
-The UI has also been updated to accommodate the new methods and sessions and conferences
-
-
-assumptions
-the end date is 23:59
-the bootstrap updated
-changes in the UI
-added sessions 
-added speakers 
-view sessions by speakers
-shows who is logged in 

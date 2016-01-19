@@ -25,7 +25,7 @@
                 <div class="col-md-6"> <div class="form-group">
                     <label for="speaker">Speaker</label>
                     <select id="speaker" ng-model="vm.confSession.speaker" name="speaker" ng-options="speaker.displayName for speaker in vm.speakers"
-                        class="form-control" >
+                        class="form-control" ng-required='true'>
                     </select>
                 </div></div>
                 <div class="col-md-6"><div class="form-group">

@@ -530,6 +530,10 @@ class ConferenceApi(remote.Service):
         if not request.session_name:
             raise endpoints.BadRequestException(
                 "Conference 'session_name' field required")
+            
+        if not request.speaker:
+            raise endpoints.BadRequestException(
+                "Conference 'speaker' is  required")
         # get the conference key
         conf_key = ndb.Key(urlsafe=request.websafeConferenceKey)
         conf = conf_key.get()
