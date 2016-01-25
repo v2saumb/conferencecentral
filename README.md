@@ -886,7 +886,7 @@ The Entity for storing the conference sessions
 
     * name - name of the session
     * highlights - session highlights 
-    * speaker - speaker key to connect it with the speakers
+    * speaker_key - speaker key to connect it with the speakers
     * duration - duration of the session
     * session_type - type of session can be one of the following 
     		* GENERAL 
