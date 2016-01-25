@@ -28,11 +28,11 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="speaker in vm.speakers">
-                            <td><a href="#/speaker/{{speaker.displayName}}/{{speaker.websafeKey}}">Sessions</a></td>
-                            <td>{{speaker.displayName}}</td>
-                            <td>{{speaker.speakerUserId}}</td>
+                            <td><a href="#/speaker/{{speaker.display_name}}/{{speaker.web_safe_key}}">Sessions</a></td>
+                            <td>{{speaker.display_name}}</td>
+                            <td>{{speaker.speaker_id}}</td>
                             <td><ul><li ng-repeat="topic in speaker.topics" ng-bind="topic"></li></ul></td>
-                            <td>{{speaker.aboutSpeaker}}</td>
+                            <td>{{speaker.about_speaker}}</td>
                             
                         </tr>
                     </tbody>

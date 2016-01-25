@@ -219,7 +219,7 @@ Following are some of the reason why I created a separate Speaker entity
 
  * **API implimentaion**  a new method 'getSessionsStartingSoon' has been added to to the api where the user can pass in the start date and the time interval. The system fetches the sessions if any within the specified time interval.
 
- * **MEMCACHE implimentaion**  a new cron task has been added to fire the similar query to fetch sessions if any within the specified time interval that are about start soon and add them to the memcache using the method `_cacheStartingSoon`. The web application has been updated to get this information out of memcache using the `getSessionsStartingSoonCached` method and show the same in the Crrousel on the home page.
+ * **MEMCACHE implimentaion**  a new cron task has been added to fire the similar query to fetch sessions if any within the specified time interval that are about start soon and add them to the memcache using the method `_cache_starting_soon`. The web application has been updated to get this information out of memcache using the `getSessionsStartingSoonCached` method and show the same in the Crrousel on the home page.
 
 * **Query 3 Sessions Within Date Range**
  A new query has been added to fetch all the sesssion in decending order of date and time within a specified start-date and end-date. The query is implemented in the API and appliction. 
@@ -285,7 +285,7 @@ Application Folder Structure
 
 `confernece.py` contains the required endpoint menthods, static methods.
 
-### _copyProfileToForm(self, prof):
+### _get_profile_form(self, prof):
 Copy relevant fields from Profile to ProfileForm.
 * Arguments:
 
@@ -296,7 +296,7 @@ Copy relevant fields from Profile to ProfileForm.
 
 ---
 
-### _getProfileFromUser(self):
+### _get_user_profile(self):
 Return user Profile from datastore, creating new one if non-existent.
 * Arguments:
 
@@ -306,7 +306,7 @@ Return user Profile from datastore, creating new one if non-existent.
 
 ---
 
-### _doProfile(self, save_request=None):
+### _do_profile(self, save_request=None):
 Get user Profile and return to user, possibly updating it first.
 * Arguments:
 
@@ -316,7 +316,7 @@ Get user Profile and return to user, possibly updating it first.
 
 ---
 
-### _createSessionMailContent(self, session, conf):
+### _create_session_mail_text(self, session, conf):
 
 Formats and creates a mail content for session creator and speaker
 * Arguments:
@@ -326,9 +326,17 @@ Formats and creates a mail content for session creator and speaker
 * Returns: 
 	* Formatted text messsage
 
+
+### _parse_date_string(self, date_str):
+Creates a date from string date passed. If there is an error creating the date the method throws an exception
+* Arguments:
+	* date_str  - date string from which the date object will be created
+* Returns: 
+	* date in yyyy-mm-dd
+
 ---
 
-### _copyConferenceToForm(self, conf, displayName):
+### _get_conference_form(self, conf, display_name):
 Copy relevant fields from Conference to ConferenceForm.
 * Arguments:
 
@@ -339,17 +347,17 @@ Copy relevant fields from Conference to ConferenceForm.
 
 ---
 
-### _copyConfSessionToForm(self, confsession):
+### _get_session_form(self, Session):
 Copy relevant fields from Conference to ConferenceForm.
 * Arguments:
 
-	* confsession - the conferenece session object that needs to be copied to the form
+	* Session - the conferenece session object that needs to be copied to the form
 * Returns: 
-    * ConfSessionForm
+    * SessionForm
 
 ---    
 
-### _createConferenceObject(self, request):
+### _create_conference_object(self, request):
 Create or update Conference object, returning ConferenceForm/request.
 * Arguments:
 	* request - ConferenceForm The confereence form 
@@ -358,7 +366,7 @@ Create or update Conference object, returning ConferenceForm/request.
 
 ---
 
-### _updateConferenceObject(self, request):
+### _update_conference_object(self, request):
 Updates the conference details based on the key and other information.
 * Arguments:
 
@@ -369,7 +377,7 @@ Updates the conference details based on the key and other information.
 
 ---
 
-### _getQuery(self, request):
+### _get_formatted_query(self, request):
 Return formatted query from the submitted filters.
 * Arguments:
 
@@ -379,7 +387,7 @@ Return formatted query from the submitted filters.
       
 ---
 
-### _formatFilters(self, filters):
+### _format_filters(self, filters):
 Parse, check validity and format user supplied filters.
 * Arguments:
 
@@ -390,7 +398,7 @@ Parse, check validity and format user supplied filters.
 ---
 
 
-### _conferenceRegistration(self, request, reg=True):
+### _conference_registration(self, request, reg=True):
 Register or unregister user for selected conference. This is a transactional method
 * Arguments:
 
@@ -401,7 +409,7 @@ Register or unregister user for selected conference. This is a transactional met
 
 ---
 
-### _manageSessionWishList(self, request, reg=True):
+### _managesession_wish_list(self, request, reg=True):
 Add or remove sessions form users wishlist.
 * Arguments:
 
@@ -412,17 +420,17 @@ Add or remove sessions form users wishlist.
 
 ---
 
-### _createConfSession(self, request):
-Create or update Conference Session object, returning ConfSessionForm/request.
+### _create_session(self, request):
+Create or update Conference Session object, returning SessionForm/request.
 * Arguments:
 
 	* request - ConSessionForm containing the information about the sesssion
 * Returns: 
-    * ConfSessionForm containing the new information
+    * SessionForm containing the new information
 
 ---
     
-### _createSpeaker(self, request):
+### _create_speaker(self, request):
 Create or update speaker object, returning SpeakerForm/request.
 * Arguments:
 
@@ -432,106 +440,105 @@ Create or update speaker object, returning SpeakerForm/request.
 
 ---
 
-### _copySpeakerToForm(self, speakerProfile):
+### _get_speaker_form(self, speaker_profile):
 Copy relevant fields from Speaker to SpeakerForm.
 * Arguments:
 
-	* speakerProfile - Speaker object containing the speaker information
+	* speaker_profile - Speaker object containing the speaker information
 * Returns: 
     * SpeakerForm 
 
 ---
 
-### _copyFeaturedSpeakerToForm(self, featuredSpeaker):
+### _get_featured_speaker_form(self, featured_speaker):
 Copy relevant fields from featuerSpeaker to FeaturedSpeakerForm.
 * Arguments:
 
-	* featuredSpeaker - FeaturedSpeaker object containing the speaker information
+	* featured_speaker - FeaturedSpeaker object containing the speaker information
 * Returns: 
     * FeaturedSpeakerForm 
 
 ---
 
-### _verifySpeaker(self, request, suppressEx=False):
-Verifys if the speaker is registered SpeakerForm/request.
+### _verify_speaker(self, request):
+Verify if the speaker is already registered. If Speaker is registered return SpeakerForm else return an empty SpeakerForm.
 * Arguments:
 
-	* request  - 
-	* suppressEx - flag to show / hide the warinings
+	* request  - request object
 * Returns: 
     * SpeakerForm
 
 ---
 
-### _getSpeakerSessionsByKey(self, request):
+### _get_speaker_sessions_by_key(self, request):
 Returns sessions by speaker key
 * Arguments:
 
 	* request - FindSpeakerForm - the search parameters
 * Returns: 
-    * List of ConfSession 
+    * List of Session 
 
 ---
 
-### _getSessionsByType(self, request):
+### _get_sessions_by_type(self, request):
 Returns sessions by session type in a conference type
 * Arguments:
 
 	* request - FindSpeakerForm - the search parameters
 * Returns: 
-    * List of ConfSession         # raise an error if session type is not passed
+    * List of Session         # raise an error if session type is not passed
 
 ---
 
-### _getSpeakerSessionsByName(self, request):
- Returns sessions by speaker displayname
+### _get_speaker_sessions_by_name(self, request):
+ Returns sessions by speaker display_name
  * Arguments:
 	* request - FindSpeakerForm - the search parameters
 * Returns: 
-    * List of ConfSession         # raise an error if session type is not passed
+    * List of Session         # raise an error if session type is not passed
 
 ---
 
-### _getAllFutureSessions(self, request):
+### _get_all_future_sessions(self, request):
  Returns all future sessions 
 
  * Arguments:
-	* request - ConfSessionSearchForm - the search parameters
+	* request - SessionSearchForm - the search parameters
 * Returns: 
-    * List of ConfSession   
+    * List of Session   
 
 ---
 
-### _getStartingSoonSessions(self, request):
+### _get_starting_soon_sessions(self, request):
  Return all session that are starting soon request will have the delta to select the upper limit
 
  * Arguments:
-	* request - ConfSessionSearchForm - the search parameters
+	* request - SessionSearchForm - the search parameters
 * Returns: 
-    * List of ConfSession   
+    * List of Session   
 
 ---
 
-### _cacheAnnouncement():
-Create Announcement & assign to memcache; used by memcache cron job. This is a static method
+### _cache_announcement():
+Create Announcement & assign to memcache; used by memcache cron job SetAnnouncementHandler. This is a static method
 
 ---
 
-### _cacheStartingSoon():
-Finds and sets the sessions startign soon in the memcache; used by memcache cron job .
- This is a static method
+### _cache_starting_soon():
+Finds and sets the sessions startign soon in the memcache; used by memcache cron job SetStartingSoon .
+This is a static method
 
 ---
 
-### _cacheFeaturedSpeaker(request):
-Create Announcement & assign to memcache; used by
+### _cache_featured_speaker(request):
+Finds and puts the featured speaker details into memcache. Used by cron job method SetNewSpeakerSpecial. This is a static method.
 * Arguments:
 
 	* request - the conference and speaker information 
 	* dispName - the organizer display name
 
 * Returns: 
-    * featuredSpeaker
+    * featured_speaker
 
 ## ENDPOINTS
 
@@ -576,7 +583,7 @@ Return Announcement from memcache.
 
 ---
 
-### getFeaturedSpeakerCached(self, request):
+### getFeaturedSpeaker(self, request):
 Return featured speakers from memcache.
 
 	* REQUEST - VoidMessage 
@@ -620,19 +627,19 @@ Create new conference.
 ### updateConference(self, request):
 Update conference w/provided fields & return w/updated info.
 
-    * REQUEST - CONF_POST_REQUEST - ConferenceForm and  websafeConferenceKeyonference for updating a conference
+    * REQUEST - CONF_POST_REQUEST - ConferenceForm and  webSafeConfKeyonference for updating a conference
 	* RESPONSE - ConferenceForm - with the information about the conference
-	* PATH - 'conference/edit/{websafeConferenceKey}'
+	* PATH - 'conference/edit/{webSafeConfKey}'
     * METHOD_TYPE - PUT
 
 ---
 
 ### getConference(self, request):
-Return requested conference (by websafeConferenceKey).
+Return requested conference (by webSafeConfKey).
 
-    * REQUEST - CONF_GET_REQUEST -  VoidMessage and websafeConferenceKey for getting  conference
+    * REQUEST - CONF_GET_REQUEST -  VoidMessage and webSafeConfKey for getting  conference
 	* RESPONSE - ConferenceForm - with the information about the conference
-	* PATH - 'conference/{websafeConferenceKey}'
+	* PATH - 'conference/{webSafeConfKey}'
     * METHOD_TYPE - GET
 
 ---
@@ -660,7 +667,7 @@ Query for conferences.
 ### getAllSessionsBeforeTime(self, request):
 Returns all the sessions before the 'start_time' and are not of type 'session_type' 
 
-    * REQUEST -  ConfSessionTask3SearchForm - search parameters to find conference as required by Task 3 of the project
+    * REQUEST -  SessionTask3SearchForm - search parameters to find conference as required by Task 3 of the project
 	* RESPONSE - ConferenceForms - list of conferences 
 	* PATH - 'sessions/beforetime'
     * METHOD_TYPE - GET
@@ -670,9 +677,9 @@ Returns all the sessions before the 'start_time' and are not of type 'session_ty
 ### registerForConference(self, request):
 Register user for selected conference.
 
-    * REQUEST - CONF_GET_REQUEST -  VoidMessage and websafeConferenceKey for getting  conference
+    * REQUEST - CONF_GET_REQUEST -  VoidMessage and webSafeConfKey for getting  conference
 	* RESPONSE - BooleanMessage with flag if the operation was successful or not
-	* PATH - 'conference/register/{websafeConferenceKey}'
+	* PATH - 'conference/register/{webSafeConfKey}'
     * METHOD_TYPE - POST
 
 ---
@@ -680,9 +687,9 @@ Register user for selected conference.
 ### unregisterFromConference(self, request):
 Register user for selected conference.
 
-    * REQUEST - CONF_GET_REQUEST -  VoidMessage and websafeConferenceKey for getting  conference
+    * REQUEST - CONF_GET_REQUEST -  VoidMessage and webSafeConfKey for getting  conference
 	* RESPONSE - BooleanMessage with flag if the operation was successful or not
-	* PATH - 'conference/unregister/{websafeConferenceKey}'
+	* PATH - 'conference/unregister/{webSafeConfKey}'
     * METHOD_TYPE - POST
 
 ---
@@ -701,9 +708,9 @@ Get list of conferences that user has registered for.
 ### createSession(self, request):
 Creates a new conference session.
 
-    * REQUEST -  CONFSESSION_POST_REQUEST - ConfSessionForm and websafeConferenceKey for creating / updating a session
-	* RESPONSE - ConfSessionForm - Conference session details.
-	* PATH - 'confSession/create/{websafeConferenceKey}'
+    * REQUEST -  Session_POST_REQUEST - SessionForm and webSafeConfKey for creating / updating a session
+	* RESPONSE - SessionForm - Conference session details.
+	* PATH - 'Session/create/{webSafeConfKey}'
     * METHOD_TYPE - POST
 
 
@@ -712,9 +719,9 @@ Creates a new conference session.
 ### getConferenceSessions(self, request):
 Return sessions for a conference.
 
-    * REQUEST -  CONFSESSION_GET_REQUEST - VoidMessage and websafeConferenceKey for getting sessions
-	* RESPONSE - ConfSessionForms - list of Conference session details.
-	* PATH - 'conference/sessions/{websafeConferenceKey}'
+    * REQUEST -  Session_GET_REQUEST - VoidMessage and webSafeConfKey for getting sessions
+	* RESPONSE - SessionForms - list of Conference session details.
+	* PATH - 'conference/sessions/{webSafeConfKey}'
     * METHOD_TYPE - POST
 
 --- 
@@ -733,7 +740,7 @@ Return All speakers .
 Return sessions by a speaker.
 
     * REQUEST -  FindSpeakerForm  search parameters for the speakers session.
-	* RESPONSE - ConfSessionForms - list of ConferenceSessions by the speaker.
+	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
 	* PATH - 'speaker/sessions'
     * METHOD_TYPE - GET
 ---
@@ -742,9 +749,9 @@ Return sessions by a speaker.
 ### getConferenceSessionsByType(self, request):
 Return sessions by a speaker.
 
-    * REQUEST -  CONFSESSIONTYPES_GET_REQUEST  VoidMessage, websafeConferenceKey,sessionType to search for speakers session.
-	* RESPONSE - ConfSessionForms - list of ConferenceSessions by the speaker.
-	* PATH - 'conference/sessions/{websafeConferenceKey}/{sessionType}'
+    * REQUEST -  SessionTYPES_GET_REQUEST  VoidMessage, webSafeConfKey,sessionType to search for speakers session.
+	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
+	* PATH - 'conference/sessions/{webSafeConfKey}/{sessionType}'
     * METHOD_TYPE - GET
 
 ---
@@ -752,9 +759,9 @@ Return sessions by a speaker.
 ### addSessionToWishlist(self, request):
 Add a sessions to users wishlist.
 
-    * REQUEST -  WISHLIST_SESSION_POST_REQUEST  VoidMessage, websafeKey to add session to the wishlist
-	* RESPONSE - BooleanMessage - true / false if theoperation sis successful.
-	* PATH - 'session/addtowishlist/{websafeKey}'
+    * REQUEST -  WISHLIST_SESSION_POST_REQUEST  VoidMessage, web_safe_key to add session to the wishlist
+	* RESPONSE - BooleanMessage - true / false if the operation was successful.
+	* PATH - 'session/addtowishlist/{web_safe_key}'
     * METHOD_TYPE - POST
 
 ---
@@ -762,9 +769,9 @@ Add a sessions to users wishlist.
 ### deleteSessionInWishlist(self, request):
 Removes a sessions from users wishlist.
 
-    * REQUEST -  WISHLIST_SESSION_POST_REQUEST  VoidMessage, websafeKey to add session to the wishlist
-	* RESPONSE - BooleanMessage - true / false if theoperation sis successful.
-	* PATH - 'session/deletefromwishlist/{websafeKey}'
+    * REQUEST -  WISHLIST_SESSION_POST_REQUEST  VoidMessage, web_safe_key to add session to the wishlist
+	* RESPONSE - BooleanMessage - true / false if the operation was successful.
+	* PATH - 'session/deletefromwishlist/{web_safe_key}'
     * METHOD_TYPE - POST
 
 ---
@@ -773,8 +780,19 @@ Removes a sessions from users wishlist.
 Retrives all sessions from users wishlist.
 
     * REQUEST -  VoidMessage
-	* RESPONSE - ConfSessionForms - list of ConferenceSessions by the speaker.
-	* PATH - 'sessionwishList'
+	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
+	* PATH - 'session_wish_list'
+    * METHOD_TYPE - GET
+
+---
+
+### clearUserWishList(self, request):
+
+Clears the users wishlist.
+
+    * REQUEST -  VoidMessage
+	* RESPONSE - BooleanMessage - true / false if the operation was successful.
+	* PATH - 'session_wish_list'
     * METHOD_TYPE - GET
 
 ---
@@ -782,8 +800,8 @@ Retrives all sessions from users wishlist.
 ### getAllFutureSessions(self, request):
 Retrives session based on a date.
 
-    * REQUEST -  ConfSessionSearchForm session search parameters
-	* RESPONSE - ConfSessionForms - list of ConferenceSessions by the speaker.
+    * REQUEST -  SessionSearchForm session search parameters
+	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
 	* PATH - 'sessions/future'
     * METHOD_TYPE - GET
 
@@ -792,8 +810,8 @@ Retrives session based on a date.
 ### getSessionsStartingSoon(self, request):
 Gets all the sessions starting within a specified time delta.
 
-    * REQUEST -  ConfSessionSearchForm session search parameters
-	* RESPONSE - ConfSessionForms - list of ConferenceSessions by the speaker.
+    * REQUEST -  SessionSearchForm session search parameters
+	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
 	* PATH - 'sessions/starting-soon/current'
     * METHOD_TYPE - GET
 
@@ -809,17 +827,17 @@ Gets all the sessions starting within a specified time delta.
 
 
 ### class SetAnnouncementHandler(webapp2.RequestHandler):
-Handles the anouncement get request that come through the CRON. Calls the static method in the conference api `ConferenceApi._cacheAnnouncement()`
+Handles the anouncement get request that come through the CRON. Calls the static method in the conference api `ConferenceApi._cache_announcement()`
 
 ---
 
 ### class SetStartingSoon(webapp2.RequestHandler):
-Handles the starting soon get request that come through the CRON. Calls the static method in conference api `ConferenceApi._cacheStartingSoon()`
+Handles the starting soon get request that come through the CRON. Calls the static method in conference api `ConferenceApi._cache_starting_soon()`
 
 ---
 
 ## class SetNewSpeakerSpecial(webapp2.RequestHandler):
-Handles the task for setting the featured speaker. Call the static method in the API `ConferenceApi._cacheFeaturedSpeaker(self.request)`
+Handles the task for setting the featured speaker. Call the static method in the API `ConferenceApi._cache_featured_speaker(self.request)`
 
 ---
 
@@ -856,21 +874,21 @@ The diagram below shows the different entities and their symbolic relationship.
 ### Speaker
 The entity stores the speaker information.
 
-    * speakerUserId - user id of the speaker
+    * speaker_id - user id of the speaker
     * topics - topics the speaker is interested in. Can have multiple topics. 
-    * aboutSpeaker - brief summary about the speaker
+    * about_speaker - brief summary about the speaker
 
 **[Back to top](#table-of-contents)**
 ---
 
-## ConfSession
+## Session
 The Entity for storing the conference sessions
 
-    * session_name - name of the session
+    * name - name of the session
     * highlights - session highlights 
     * speaker - speaker key to connect it with the speakers
     * duration - duration of the session
-    * type_of_session - type of session can be one of the following 
+    * session_type - type of session can be one of the following 
     		* GENERAL 
     		* WORKSHOP 
     		* LECTURE 
@@ -891,14 +909,14 @@ The entity to store the Conference
 
     * name - Name of the conference 
     * description - description or details of the conference
-    * organizerUserId - organizer id of the conference. This is the profile mainemail
+    * organizer_id - organizer id of the conference. This is the profile main_email
     * topics - topics of the conference
     * city - city where the conference is held
-    * startDate - start date of the conference
+    * start_date - start date of the conference
     * month - the month when the conference is held
-    * endDate - the end date of the conference
-    * maxAttendees - maximum number of people that can attend the conference
-    * seatsAvailable - current seats available at the conference
+    * end_date - the end date of the conference
+    * max_attendees - maximum number of people that can attend the conference
+    * seats_available - current seats available at the conference
 
 **[Back to top](#table-of-contents)**
 ---    
@@ -906,11 +924,11 @@ The entity to store the Conference
 ## Profile
 The entity to store the Profile information
 
-	* displayName - the display name for the profile
-	* mainEmail - main email address ussed for communication
-	* teeShirtSize - Tshirt size for the user
-	* conferenceKeysToAttend - the conferences that the user has registered to attend
-	* sessionWishList - the sessions that the user wants to attend
+	* display_name - the display name for the profile
+	* main_email - main email address ussed for communication
+	* tee_shirt_size - Tshirt size for the user
+	* conference_keys_to_attend - the conferences that the user has registered to attend
+	* session_wish_list - the sessions that the user wants to attend
 
 **[Back to top](#table-of-contents)**
 ---   

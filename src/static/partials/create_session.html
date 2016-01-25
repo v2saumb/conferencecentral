@@ -13,10 +13,10 @@
         <div class="row" >
             <div class="col-md-12">
                 <div class="form-group">
-                    <label for="session_name">Name <span class="required">*</span></label>
+                    <label for="name">Name <span class="required">*</span></label>
                     <span class="label label-danger"
-                    ng-show="conferenceSessionForm.session_name.$error.required">Required!</span>
-                    <input id="session_name" type="text" name="session_name" ng-model="vm.confSession.session_name" class="form-control"
+                    ng-show="conferenceSessionForm.name.$error.required">Required!</span>
+                    <input id="name" type="text" name="name" ng-model="vm.Session.name" class="form-control"
                     ng-required="true"/>
                 </div>
             </div>
@@ -24,13 +24,13 @@
             <div class="row">
                 <div class="col-md-6"> <div class="form-group">
                     <label for="speaker">Speaker</label>
-                    <select id="speaker" ng-model="vm.confSession.speaker" name="speaker" ng-options="speaker.displayName for speaker in vm.speakers"
+                    <select id="speaker" ng-model="vm.Session.speaker" name="speaker" ng-options="speaker.display_name for speaker in vm.speakers"
                         class="form-control" ng-required='true'>
                     </select>
                 </div></div>
                 <div class="col-md-6"><div class="form-group">
-                    <label for="type_of_session">Type of Session</label>
-                    <select id="type_of_session" ng-model="vm.confSession.type_of_session" name="type_of_session" ng-options="sessiontype.value as sessiontype.text for sessiontype in vm.sessionTypes"
+                    <label for="session_type">Type of Session</label>
+                    <select id="session_type" ng-model="vm.Session.session_type" name="session_type" ng-options="sessiontype.value as sessiontype.text for sessiontype in vm.sessionTypes"
                         class="form-control">
                     </select>
                 </div></div>
@@ -41,12 +41,12 @@
                 
                 <div class="col-md-6 form-group">
                     <div  >
-                        <label for="date">Session Date( Between {{vm.conference.startDate}} -  {{vm.conference.endDate}})</label>
+                        <label for="date">Session Date( Between {{vm.conference.start_date}} -  {{vm.conference.end_date}})</label>
                         <span class="label label-danger"
                         ng-show="!vm.isValidDate()">Date outside conference date!</span>
                         <p class="input-group">
                             <input id="date" type="text" class="form-control" uib-datepicker-popup="{{vm.format}}"
-                            ng-model="vm.confSession.date" is-open="vm.opened"
+                            ng-model="vm.Session.date" is-open="vm.opened"
                             min-date="minDate" max-date="maxDate" datepicker-options="vm.dateOptions" date-disabled="vm.disabled(date, mode)"
                             close-text="Close"/>
                             <span class="input-group-btn">
@@ -61,9 +61,9 @@
                 <label for="duration">Duration</label>
                 <span class="label label-danger"
                 ng-show="!vm.isValidDuration()">Must be an integer!</span>
-                <!-- The input type is text as the vm.confSession.duration will be undefined,
+                <!-- The input type is text as the vm.Session.duration will be undefined,
                 hence isValidduration will be true when input type is number -->
-                <input id="duration" type="text" name="duration" ng-model="vm.confSession.duration"
+                <input id="duration" type="text" name="duration" ng-model="vm.Session.duration"
                 class="form-control"/>
             </div></div>
             
@@ -72,14 +72,14 @@
             <div class="col-md-6">
                 <div class="form-group">
                     <label for="highlights">Session Highlights</label>
-                    <textarea id="highlights" type="text" rows="8" name="highlights" ng-model="vm.confSession.highlights"
+                    <textarea id="highlights" type="text" rows="8" name="highlights" ng-model="vm.Session.highlights"
                     class="form-control"></textarea>
                 </div>
                 </div><div class="col-md-2"></div>
                 <div class="col-md-4">
                     <div class="form-group" >
                         <label for="start_time">Start Time (24Hrs Format)</label>
-                        <uib-timepicker class="time-picker" name="start_time" id="start_time" ng-model="vm.confSession.start_time" ng-change="changed()" hour-step="vm.hstep" minute-step="vm.mstep" show-meridian="vm.ismeridian"></uib-timepicker>
+                        <uib-timepicker class="time-picker" name="start_time" id="start_time" ng-model="vm.Session.start_time" ng-change="changed()" hour-step="vm.hstep" minute-step="vm.mstep" show-meridian="vm.ismeridian"></uib-timepicker>
                     </div></div>
                     
                 </div>
@@ -89,7 +89,7 @@
                         
                         <div class="form-group">
                             <label for="venue">Venue</label>
-                            <input id="venue" type="text" name="venue" ng-model="vm.confSession.venue"
+                            <input id="venue" type="text" name="venue" ng-model="vm.Session.venue"
                             class="form-control"/>
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                         ng-disabled="loading "> <i class="fa fa-caret-left"></i> Back
                     </button></div>
                     <div class="col-md-2"><button ng-click="vm.createConferenceSession(conferenceSessionForm)" class="btn btn-primary"
-                        ng-disabled="!vm.isValidConfSession(conferenceSessionForm) || loading ">Create
+                        ng-disabled="!vm.isValidSession(conferenceSessionForm) || loading ">Create
                     </button></div>
                     
                     <div class="col-md-8"></div>
