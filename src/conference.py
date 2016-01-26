@@ -225,16 +225,10 @@ class ConferenceApi(remote.Service):
         except:
             # Raise an exeption if date cannot be created.
             raise endpoints.BadRequestException(
-                """Invalid date or date format.
-                Please enter date like 2016/01/31, passed [ %s ]""" % date_str)
-        if format_len == 10:
-            retval = new_date.date()
-        else:
-            retval = new_date
-        return retval
-
-
-# - - - Private methods  - - - - - - - - - - - - - - - - - - -
+                """Invalid date or date format.\
+                 Please enter date in [ %s ] format. """ % date_format)
+        # return the parsed date
+        return new_date
 
     def _get_conference_form(self, conf, display_name):
         """Copy relevant fields from Conference to ConferenceForm."""
@@ -320,14 +314,14 @@ class ConferenceApi(remote.Service):
 
         if data['start_date']:
             data['start_date'] = self._parse_date_string(
-                data['start_date'], SHORT_DATE, 10)
+                data['start_date'], SHORT_DATE, 10).date()
             data['month'] = data['start_date'].month
         else:
             data['month'] = 0
 
         if data['end_date']:
             data['end_date'] = self._parse_date_string(
-                data['end_date'], SHORT_DATE, 10)
+                data['end_date'], SHORT_DATE, 10).date()
 
         # set seats_available to be same as max_attendees on creation
         if data["max_attendees"] > 0:
@@ -368,7 +362,13 @@ class ConferenceApi(remote.Service):
         del data['organizer_display_name']
 
         # update existing conference
-        conf = ndb.Key(urlsafe=request.webSafeConfKey).get()
+        try:
+            conf = ndb.Key(urlsafe=request.webSafeConfKey).get()
+        except:
+            # raise exception if problem getting conference
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.webSafeConfKey)
+
         # check that conference exists
         if not conf:
             raise endpoints.NotFoundException(
@@ -387,7 +387,8 @@ class ConferenceApi(remote.Service):
             if data not in (None, []):
                 # special handling for dates (convert string to Date)
                 if field.name in ('start_date', 'end_date'):
-                    data = self._parse_date_string(data, SHORT_DATE, 10)
+                    data = self._parse_date_string(
+                        data, SHORT_DATE, 10).date()
                     if field.name == 'start_date':
                         conf.month = data.month
                 setattr(conf, field.name, data)
@@ -458,13 +459,16 @@ class ConferenceApi(remote.Service):
     def _conference_registration(self, request, reg=True):
         """Register or unregister user for selected conference."""
         retval = None
-        prof = self._get_user_profile()  # get user Profile
+        # get user Profile
+        prof = self._get_user_profile()
 
         # check if conf exists given websafeConfKey
         # get conference; check that it exists
         wsck = request.webSafeConfKey
-        conf = ndb.Key(urlsafe=wsck).get()
-        if not conf:
+        try:
+            conf = ndb.Key(urlsafe=wsck).get()
+        except:
+            # raise an exception if conference is not found
             raise endpoints.NotFoundException(
                 'No conference found with key: [ %s ]' % wsck)
 
@@ -517,7 +521,7 @@ class ConferenceApi(remote.Service):
                     'No session found with key: [ %s ]' % wsck)
         except:
             retval = False
-            # raise exception if not able to find session
+            # raise exception if ther eis a problem getting the session.
             raise endpoints.NotFoundException(
                 'No session found with key: [ %s ]' % wsck)
 
@@ -561,6 +565,15 @@ class ConferenceApi(remote.Service):
         if not request.webSafeConfKey:
             raise endpoints.BadRequestException(
                 "Session 'webSafeConfKey' field required")
+
+        # get the conference key
+        try:
+            conf_key = ndb.Key(urlsafe=request.webSafeConfKey)
+            conf = conf_key.get()
+        except:
+            # raise exception if the conference is not found
+            raise endpoints.NotFoundException(
+                'No conference found with key: %s' % request.webSafeConfKey)
         # raise exception if required field is mising
         if not request.name:
             raise endpoints.BadRequestException(
@@ -580,15 +593,6 @@ class ConferenceApi(remote.Service):
         except:
             raise endpoints.BadRequestException(
                 "Incorrect 'speaker_key' is passed.")
-
-        # get the conference key
-        try:
-            conf_key = ndb.Key(urlsafe=request.webSafeConfKey)
-            conf = conf_key.get()
-        except:
-            # raise exception if the conference is not found
-            raise endpoints.NotFoundException(
-                'No conference found with key: %s' % request.webSafeConfKey)
 
         # raise exception if user is not the organizer of this conference
         if conf.organizer_id != user_id:
@@ -615,7 +619,7 @@ class ConferenceApi(remote.Service):
         # start_date
         if data['date']:
             data['date'] = self._parse_date_string(
-                data['date'], SHORT_DATE, 10)
+                data['date'], SHORT_DATE, 10).date()
 
         # convert time
         try:
@@ -757,7 +761,7 @@ class ConferenceApi(remote.Service):
 
         #  get the user id for the current user
         user_id = get_user_id(user)
-        # Query the
+        # find if a speaker with this profile exists
         speaker = Speaker.query(ancestor=ndb.Key(Profile, user_id)).get()
 
         if not speaker:
@@ -786,9 +790,16 @@ class ConferenceApi(remote.Service):
         if not request.sessionType:
             raise endpoints.BadRequestException(
                 "'sessionType'  is required.")
+
+        #  try to get conference key
+        try:
+            conf_key = ndb.Key(urlsafe=request.webSafeConfKey)
+        except:
+            raise endpoints.BadRequestException(
+                "Conference key is not valid")
+
         # get all the sessions for the conference
-        sessions = Session.query(
-            ancestor=ndb.Key(urlsafe=request.webSafeConfKey))
+        sessions = Session.query(ancestor=conf_key)
         # filter sessions for the desired type
         session_filter = ndb.query.FilterNode(
             'session_type', '=', request.sessionType)
@@ -832,19 +843,17 @@ class ConferenceApi(remote.Service):
     def _get_all_future_sessions(self, request):
         """ Returns all future sessions """
         # get the dates from the request
-        strdate = request.start_date
-        strend_date = request.end_date
+        str_date = request.start_date
+        str_end_date = request.end_date
         # format the start date time
-        if strdate:
-            st_date = self._parse_date_string(strdate, LONG_DATE_FORMAT, 16)
-            logging.info(st_date)
-            start_date = datetime.combine(st_date.date(), st_date.time())
-
+        if str_date:
+            start_date = self._parse_date_string(
+                str_date, LONG_DATE_FORMAT, 16)
         # format the end date time
-        if strend_date:
-            end_date = datetime.combine(datetime.strptime(strend_date[
-                :16], LONG_DATE_FORMAT).date(),
-                datetime.strptime(strend_date[:16], LONG_DATE_FORMAT).time())
+        if str_end_date:
+            # get formatted end date
+            end_date = self._parse_date_string(
+                str_end_date, LONG_DATE_FORMAT, 16)
         else:
             end_date = None
 
@@ -864,19 +873,26 @@ class ConferenceApi(remote.Service):
         will have the delta to select the upper limit
         """
         # get the starting date from request
-        strdate = request.start_date
+        str_date = request.start_date
         # format date if passed raise exception if date is not passed
-        if strdate:
-            start_date = datetime.combine(datetime.strptime(strdate[
-                :16], LONG_DATE_FORMAT).date(),
-                datetime.strptime(strdate[:16], LONG_DATE_FORMAT).time())
+        if str_date:
+            # format the date
+            start_date = self._parse_date_string(
+                str_date, LONG_DATE_FORMAT, 16)
+
         else:
             raise endpoints.BadRequestException("'start_date' field required")
 
         # get the delta minutes
-        end_delta = int(request.delta_minutes) or STARTING_SOON_INTERVAL
+        end_delta = request.delta_minutes or STARTING_SOON_INTERVAL
+
         #  create end date
-        end_date = start_date + timedelta(minutes=end_delta)
+        try:
+            end_date = start_date + timedelta(minutes=end_delta)
+        except:
+            #  raise exception if end date can not be created
+            raise endpoints.BadRequestException(
+                "Invalid 'delta_minutes' value.")
         # query session based on the start date
         sessions = Session.query(
             Session.date > start_date).order(Session.date)
@@ -968,21 +984,28 @@ class ConferenceApi(remote.Service):
         # init featured_speaker
         featured_speaker = {}
         logging.info("in the method for set featured speaker")
-        # get the sesion in the conference
-        sessions = Session.query(ancestor=ndb.Key(urlsafe=request.get(
-            'confKey'))).filter(
+
+        # get the conference key
+        try:
+            conf_key = ndb.Key(urlsafe=request.get('confKey'))
+        except:
+            raise endpoints.BadRequestException(
+                "Invalid Conference Key Passed")
+
+            # get the sesion in the conference
+        sessions = Session.query(ancestor=conf_key).filter(
             Session.speaker_key == request.get('speakerKey'))
         # if there are more then one sessions by the speaker get the required
         # information
 
         if sessions.count(limit=5) > 1:
             # get conference info
-            conf = ndb.Key(urlsafe=request.get('confKey')).get()
+            conf = conf_key.get()
             # get speaker profile
             speaker_profile = ndb.Key(urlsafe=request.get(
                 'speakerKey')).parent().get()
             # get the session names only
-            sessions = sessions.fetch(5, projection=[Session.name])
+            sessions = sessions.fetch(projection=[Session.name])
 
             logging.info(speaker_profile.display_name)
             # create the featured speaker object
@@ -993,7 +1016,6 @@ class ConferenceApi(remote.Service):
                                 }
             # set the featured speaker in memcache
             memcache.set(MEMCACHE_FEATURED_SPEAKERS, featured_speaker)
-        return featured_speaker
 
     #  ------------------------------- Endpoints ---------------------
 
@@ -1173,7 +1195,13 @@ class ConferenceApi(remote.Service):
          and are not of type 'session_type' """
         st_time = request.start_time
         # format the time from the requst
-        start_time = datetime.strptime(st_time[:5], "%H:%M").time()
+        try:
+            start_time = datetime.strptime(st_time[:5], "%H:%M").time()
+        except:
+            # raise exception if time cannot be parsed
+            raise endpoints.BadRequestException(
+                """Invalid time format.Please enter time  in [%H:%M] format.""")
+
         # fetch only the keys for sessions before the requested time
         time_query = Session.query(Session.start_time < start_time).order(
             Session.start_time).order(-Session.date).fetch(keys_only=True)
@@ -1245,15 +1273,15 @@ class ConferenceApi(remote.Service):
         # throw exception if the conference key is not passed.
         if not request.webSafeConfKey:
             raise endpoints.BadRequestException(
-                "Conference key is not valid required.")
+                "Conference key is required.")
+        try:
+            conf_key = ndb.Key(urlsafe=request.webSafeConfKey)
+        except:
+            #  raise exception if key can not be found
+            raise endpoints.BadRequestException(
+                "Conference key is not valid.")
 
-        # make sure user is authed
-        user = endpoints.get_current_user()
-        if not user:
-            raise endpoints.UnauthorizedException('Authorization required')
-        sessions = Session.query(
-            ancestor=ndb.Key(urlsafe=request.webSafeConfKey)).order(
-            -Session.date)
+        sessions = Session.query(ancestor=conf_key).order(-Session.date)
         # return set of ConferenceForm objects per Conference
         return SessionForms(
             items=[self._get_session_form(

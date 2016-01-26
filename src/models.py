@@ -114,7 +114,7 @@ class SessionSearchForm(messages.Message):
     start_date = messages.StringField(1, required=True)
     end_date = messages.StringField(2)
     session_type = messages.StringField(3)
-    delta_minutes = messages.StringField(4)
+    delta_minutes = messages.IntegerField(4)
 
 
 class SessionTask3SearchForm(messages.Message):
