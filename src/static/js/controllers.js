@@ -1490,7 +1490,7 @@ function session_wish_listCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $route
 
 function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routeParams, toastr, $filter) {
     var vm = this;
-    vm.headingText = "Showing All Future Session(s)"
+    vm.headingText = "Showing All Session(s)"
     vm.sessions = [];
     vm.autoArchive = true;
     vm.end_date = null;
@@ -1529,7 +1529,7 @@ function viewAllSessionsCtrl($scope, $log, oauth2Provider, HTTP_ERRORS, $routePa
             vm.end_date = date_d.format("YYYY-MM-DD HH:mm");
 
         }
-        vm.start_date = $filter('date')(new Date(), 'yyyy-MM-dd H:mm');
+        vm.start_date = $filter('date')(new Date().setHours(0, 0, 0, 0), 'yyyy-MM-dd H:mm');
         var reqobj = {
             start_date: vm.start_date
 
