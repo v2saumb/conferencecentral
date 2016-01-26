@@ -125,6 +125,8 @@ Following are some of the prerequisites for the development environment
 
 ###Local Application Setup
 
+1. Download the code from the gitHub [repository][coderepo].
+1. Navigate to the `src` folder. 
 1. Update the value of `application` in `app.yaml` to the app ID you
    have registered in the App Engine admin console and would like to use to host
    your instance.  I have already updated this with my application id
@@ -952,6 +954,7 @@ The entity to store the Profile information
 [wish list]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/wishlist.jpg "Register Speaker"
 [fstr]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/folderstructure.jpg "Folder Structure"
 [dbdesign]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/databasediag.jpg "Database Design"
+[coderepo]: https://github.com/v2saumb/conferencecentral "Code Repository"
 [1]: https://developers.google.com/appengine
 [2]: http://python.org
 [3]: https://developers.google.com/appengine/docs/python/endpoints/
