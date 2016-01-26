@@ -244,6 +244,9 @@ Acording to the ndb [doccumentation][7] the datastore enforces some restrictions
 
 "Limitations: The Datastore enforces some restrictions on queries. Violating these will cause it to raise exceptions. For example, **combining too many filters, using inequalities for multiple properties, or combining an inequality with a sort order on a different property are all currently disallowed. Also filters referencing multiple properties sometimes require secondary indexes to be configured.** "
 
+Specifically to solve our problem we will have to query all the sessions where the start_time  < 19:00 and where the session_type != 'WORKSOP'. In theory this should work however in this case  both **start_time  < 19:00**  and  **session_type != 'WORKSOP'** are inequality filters and as per the current limitations of the datastore we can not combine inequality filters on multiple properties.
+
+
 **Proposed and Implemented Soultion:** After going through multiple documents and web forums I implemented the following solution.
 
 	* Query the sessions before the specified time 7PM(19:00) in this case and store it a variable timeQry. remember to fetch only the keys.
