@@ -1,32 +1,32 @@
 ## Introduction
-Sams Conference App is conference organization application that exists on the web. There are two parts of the appliation 
+Sams Conference App is conference organization application that exists on the web. There are two parts of the application 
 
 1. The ConferenceApi
 1. The Web Application
 
-Multiple enhancements have been made to the provided base web application and the api to accomodate the new features and functionality 
+Multiple enhancements have been made to the provided base web application and the API to accommodate the new features and functionality 
 
 ---
 
 ## Table of Contents
 
-1. [Introduction ](#introduction)
-    - [Program Features](#program-features)
-1. [Setup ](#setup)
-    - [Prerequisites ](#prerequisites)
-    - [Local Application Setup ](#local-appliction-setup)   
-    - [Application Details](#application-etails)   
-1. [Assumptions](#assumptions)
-1. [Extra Credit Features](#extra-credit-features)
-1. [Explanations](#explanations)
-	- [Speaker Implementation](#speaker-implementation)
-	- [Additional Queries](#additional-queries)
-	- [Query Problem](#query-problem)
-1. [Code Documentation ](#code-documentation)
-    - [Folder Structure ](#folder-structure)
-    - [ConferenceApi](#conferenceapi)
-    - [Tasks and Crons](#tasks-and-crons)
-1. [Database Structure ](#database-structure)
+1. [Introduction] (#introduction)
+    - [Program Features] (#program-features)
+1. [Setup] (#setup)
+    - [Prerequisites] (#prerequisites)
+    - [Local Application Setup] (#local-application-setup)
+    - [Application Details] (#application-details)
+1. [Assumptions] (#assumptions)
+1. [Extra Credit Features] (#extra-credit-features)
+1. [Explanations] (#explanations)
+	- [Speaker Implementation] (#speaker-implementation)
+	- [Additional Queries] (#additional-queries)
+	- [Query Problem] (#query-problem)
+1. [Code Documentation] (#code-documentation)
+    - [Folder Structure] (#folder-structure)
+    - [ConferenceApi] (#conferenceapi)
+    - [Tasks and Crons] (#tasks-and-crons)
+1. [Database Structure] (#database-structure)
 
 ---
 
@@ -44,7 +44,7 @@ Multiple enhancements have been made to the provided base web application and th
 
 ---
 
-* **Information Carousel:** The home page has a carousel that displays sessions starting sooon.
+* **Information Carousel:** The home page has a carousel that displays sessions starting soon.
 
 ![alt text][startson]
 
@@ -99,25 +99,25 @@ Multiple enhancements have been made to the provided base web application and th
 
 
 
-* **View Users Wishlist:** New Screen to view users wishlist
+* **View Users Wish list:** New Screen to view user’s wish list
 
 
-![alt text][wishlist]
+![alt text][wish list]
 
 ---
 
 
-* **Other Screen Changes:**  Other screens have been modified to accomodate the new functionality
+* **Other Screen Changes:**  Other screens have been modified to accommodate the new functionality
 A new notification system has been added for floating error messages.
 
 * **Email Confirmations :** Email confirmations have been added when session , speaker, conference is created/ modified
 
-* **Task Queues :** Featured Speaker functionalityhas been implemented using the task queues
+* **Task Queues :** Featured Speaker functionality has been implemented using the task queues
 
 
 ## Setup
 ###Prerequisites 
-Following are some of the prerequsits for the development environment
+Following are some of the prerequisites for the development environment
 
 1. Google Account
 1. Google App Engine SDK for python
@@ -168,9 +168,9 @@ Following are some of the prerequsits for the development environment
 
 1. **Separate Entity for Speakers:** A separate entity has been created for the speakers
 1. **Design Choice :** Design Choice included in the readme.
-1. **UI Changes:** All the new features added to the api have also been added to the UI of the application.
+1. **UI Changes:** All the new features added to the API have also been added to the UI of the application.
 1. **Email Confirmations:** Various confirmation mails have been added to the  application.
-1. **Explaination for the Problem:** Readme includes the explanation for the problem.
+1. **Explanation for the Problem:** Readme includes the explanation for the problem.
 
 **[Back to top](#table-of-contents)**
 
@@ -191,14 +191,14 @@ The diagram below shows the different entities and their symbolic relationship.
 Following are some of the reason why I created a separate Speaker entity
 
  * A separate entity for Speakers for capturing a more information about them.
- * Separate entity allows to show user the differnt speakers at the time of session creation.
- * Asumed that a session can have only one speaker.
+ * Separate entity allows showing user the different speakers at the time of session creation.
+ * Assumed that a session can have only one speaker.
  * Separate entity allows me to search the session using the speaker keys.
  * Any registered user can be registered as a speaker.
  * Keeping only the speaker specific detail in this entity other information is picked from the user profile.
  * This also helps me to send the speaker data only what is required. 
  * This approach allowed me to add a whole new section in the UI for showing / filtering session by speaker
- * There is no cleanup code for this phase of the project. meaning there is no code to cleanup the old conferences and sessions whose end date has been reached.
+ * There is no cleanup code for this phase of the project. meaning there is no code to clean up the old conferences and sessions whose end date has been reached.
  * When a conference is updated the start date has to be changed to min current date.
 
 
@@ -206,29 +206,29 @@ Following are some of the reason why I created a separate Speaker entity
  * When a new session is created one of the Speaker key is sent as part of the request. 
  * The speaker key is saved in the speaker field of the entity. The indexes have been updated to allow easy query of the data.
  * The session is a child of the Conference. 
- * This makes it easy to search sesssions for a conference.
+ * This makes it easy to search sessions for a conference.
 
 ### Additional Queries
 
 * **Task 3 Additional Queries**
 
 * **Query 1 Sessions Starting Soon**
- A new query has been added to fetch 5 of the sessions starting at a configurable interval. The query is implemented in the API and appliction. This will allow the users to know what sessions are starting say in next 30 minutes. This query allows the user to select the sessions for date and time.
- 	* To make this work I have added the start_time to the start_date befoe storing the information in the datastore
+ A new query has been added to fetch 5 of the sessions starting at a configurable interval. The query is implemented in the API and application. This will allow the users to know what sessions are starting say in next 30 minutes. This query allows the user to select the sessions for date and time.
+ 	* To make this work I have added the start_time to the start_date before storing the information in the datastore
 
 
- * **API implimentaion**  a new method 'getSessionsStartingSoon' has been added to to the api where the user can pass in the start date and the time interval. The system fetches the sessions if any within the specified time interval.
+ * **API implementation**  a new method 'getSessionsStartingSoon' has been added to the API where the user can pass in the start date and the time interval. The system fetches the sessions if any within the specified time interval.
 
- * **MEMCACHE implimentaion**  a new cron task has been added to fire the similar query to fetch sessions if any within the specified time interval that are about start soon and add them to the memcache using the method `_cache_starting_soon`. The web application has been updated to get this information out of memcache using the `getSessionsStartingSoonCached` method and show the same in the Crrousel on the home page.
+ * **MEMCACHE implementation**  a new cron task has been added to fire the similar query to fetch sessions if any within the specified time interval that are about start soon and add them to the memcache using the method `_cache_starting_soon`. The web application has been updated to get this information out of memcache using the `getSessionsStartingSoonCached` method and show the same in the Carousel on the home page.
 
 * **Query 3 Sessions Within Date Range**
- A new query has been added to fetch all the sesssion in decending order of date and time within a specified start-date and end-date. The query is implemented in the API and appliction. 
- * The UI uses this query and allows the user to easly filter the sessions for today , this week, this month, and this year.
+ A new query has been added to fetch all the session in descending order of date and time within a specified start-date and end-date. The query is implemented in the API and application. 
+ * The UI uses this query and allows the user to easily filter the sessions for today , this week, this month, and this year.
 
  `getAllFutureSessions` method is flexible enough that it will work only if start date is provided. In this case it will fetch the sessions form the passed start-date
 
 * **Query 2 Sessions by speaker name**
- A new query has been added to the API to find the sessions for a speaker by speaker name. This will be really useful to searh the session if the user only knows the speaker name. The is not emplement in the ewb application yet.
+ A new query has been added to the API to find the sessions for a speaker by speaker name. This will be really useful to search the session if the user only knows the speaker name. This is not implemented in the web application yet.
 
  `getSessionsBySpeaker()`  method works both for speaker keys and speaker name
 
@@ -240,14 +240,14 @@ Following are some of the reason why I created a separate Speaker entity
 **Problem:** Let’s say that you don't like workshops and you don't like sessions after 7 pm. How would you handle a query for all non-workshop sessions before 7 pm? What is the problem for implementing this query? What ways to solve it did you think of?
 
 **Reason of the Problem**
-Acording to the ndb [doccumentation][7] the datastore enforces some restrictions on queries
+According to the ndb [documentation][7] the datastore enforces some restrictions on queries
 
 "Limitations: The Datastore enforces some restrictions on queries. Violating these will cause it to raise exceptions. For example, **combining too many filters, using inequalities for multiple properties, or combining an inequality with a sort order on a different property are all currently disallowed. Also filters referencing multiple properties sometimes require secondary indexes to be configured.** "
 
-Specifically to solve our problem we will have to query all the sessions where the start_time  < 19:00 and where the session_type != 'WORKSOP'. In theory this should work however in this case  both **start_time  < 19:00**  and  **session_type != 'WORKSOP'** are inequality filters and as per the current limitations of the datastore we can not combine inequality filters on multiple properties.
+Specifically to solve our problem we will have to query all the sessions where the start_time  < 19:00 and where the session_type != 'WORKSOP'. In theory this should work however in this case  both **start_time  < 19:00**  and  **session_type != 'WORKSOP'** are inequality filters and as per the current limitations of the datastore we cannot combine inequality filters on multiple properties. So we need to come up with a different approach to combine these filters.
 
 
-**Proposed and Implemented Soultion:** After going through multiple documents and web forums I implemented the following solution.
+**Proposed and Implemented Solution:** After going through multiple documents and web forums I implemented the following solution.
 
 	* Query the sessions before the specified time 7PM(19:00) in this case and store it a variable timeQry. remember to fetch only the keys.
 
@@ -258,7 +258,7 @@ Specifically to solve our problem we will have to query all the sessions where t
 	* Use `ndb.get_multi(set(timeQry).intersection(typeQry))` fetch all the intersected sessions
 
 	
-The API method `getAllSessionsBeforeTime` allows the user to pass in any datetime and type of session to apply the above logicand return relevant sessions.
+The API method `getAllSessionsBeforeTime` allows the user to pass in any datetime and type of session to apply the above logic and return relevant sessions.
 
 
 I choose this approach because
@@ -327,7 +327,7 @@ Formats and creates a mail content for session creator and speaker
 	* session  - the session that needs to be copied
 	* conf  - the conference object
 * Returns: 
-	* Formatted text messsage
+	* Formatted text message
 
 
 ### _parse_date_string(self, date_str):
@@ -343,7 +343,7 @@ Creates a date from string date passed. If there is an error creating the date t
 Copy relevant fields from Conference to ConferenceForm.
 * Arguments:
 
-	* conf - the conferenece object that needs to be copied to the form
+	* conf - the conference object that needs to be copied to the form
 	* dispName - the organizer display name
 * Returns: 
     * ConferenceForm
@@ -354,7 +354,7 @@ Copy relevant fields from Conference to ConferenceForm.
 Copy relevant fields from Conference to ConferenceForm.
 * Arguments:
 
-	* Session - the conferenece session object that needs to be copied to the form
+	* Session - the conference session object that needs to be copied to the form
 * Returns: 
     * SessionForm
 
@@ -363,7 +363,7 @@ Copy relevant fields from Conference to ConferenceForm.
 ### _create_conference_object(self, request):
 Create or update Conference object, returning ConferenceForm/request.
 * Arguments:
-	* request - ConferenceForm The confereence form 
+	* request - ConferenceForm The conference form 
 * Returns: 
     * ConferenceForm
 
@@ -373,7 +373,7 @@ Create or update Conference object, returning ConferenceForm/request.
 Updates the conference details based on the key and other information.
 * Arguments:
 
-	* request - ConferenceForm  the conferenece form 
+	* request - ConferenceForm  the conference form 
 
 * Returns: 
     * ConferenceForm 
@@ -384,7 +384,7 @@ Updates the conference details based on the key and other information.
 Return formatted query from the submitted filters.
 * Arguments:
 
-	* request -  the filters form  containig the different filters
+	* request -  the filters form  containing the different filters
 * Returns: 
     * Query 
       
@@ -406,20 +406,20 @@ Register or unregister user for selected conference. This is a transactional met
 * Arguments:
 
 	* request - containing the  websafe conference key
-	* reg - boolean to register or unregister
+	* reg - Boolean to register or unregister
 * Returns: 
-    * boolean true or false depending on success or error
+    * Boolean true or false depending on success or error
 
 ---
 
 ### _managesession_wish_list(self, request, reg=True):
-Add or remove sessions form users wishlist.
+Add or remove sessions form users wish list.
 * Arguments:
 
 	* request - containing the  websafe session key
-	* reg - boolean to add or remove the session to the wishlist
+	* reg - Boolean to add or remove the session to the wish list
 * Returns: 
-    * boolean true or false depending on success or error
+    * Boolean true or false depending on success or error
 
 ---
 
@@ -427,7 +427,7 @@ Add or remove sessions form users wishlist.
 Create or update Conference Session object, returning SessionForm/request.
 * Arguments:
 
-	* request - ConSessionForm containing the information about the sesssion
+	* request - SessionForm containing the information about the session
 * Returns: 
     * SessionForm containing the new information
 
@@ -489,7 +489,7 @@ Returns sessions by session type in a conference type
 
 	* request - FindSpeakerForm - the search parameters
 * Returns: 
-    * List of Session         # raise an error if session type is not passed
+    * List of Session         # raises an error if session type is not passed
 
 ---
 
@@ -498,7 +498,7 @@ Returns sessions by session type in a conference type
  * Arguments:
 	* request - FindSpeakerForm - the search parameters
 * Returns: 
-    * List of Session         # raise an error if session type is not passed
+    * List of Session         # raises an error if session type is not passed
 
 ---
 
@@ -528,7 +528,7 @@ Create Announcement & assign to memcache; used by memcache cron job SetAnnouncem
 ---
 
 ### _cache_starting_soon():
-Finds and sets the sessions startign soon in the memcache; used by memcache cron job SetStartingSoon .
+Finds and sets the sessions starting soon in the memcache; used by memcache cron job SetStartingSoon .
 This is a static method
 
 ---
@@ -570,7 +570,7 @@ Register a Speaker. Verify if the user is already registered as speaker
 Return Announcement from memcache.
 
 	* REQUEST - VoidMessage 
-	* RESPONSE - String containg the announcement
+	* RESPONSE - String contain the announcement
 	* PATH - 'conference/announcement/get'
     * METHOD_TYPE - GET
 
@@ -742,7 +742,7 @@ Return All speakers .
 ### getSessionsBySpeaker(self, request):
 Return sessions by a speaker.
 
-    * REQUEST -  FindSpeakerForm  search parameters for the speakers session.
+    * REQUEST -  FindSpeakerForm  search parameters for the speaker’s session.
 	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
 	* PATH - 'speaker/sessions'
     * METHOD_TYPE - GET
@@ -752,7 +752,7 @@ Return sessions by a speaker.
 ### getConferenceSessionsByType(self, request):
 Return sessions by a speaker.
 
-    * REQUEST -  SessionTYPES_GET_REQUEST  VoidMessage, webSafeConfKey,sessionType to search for speakers session.
+    * REQUEST -  SessionTYPES_GET_REQUEST  VoidMessage, webSafeConfKey,sessionType to search for speaker’s session.
 	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
 	* PATH - 'conference/sessions/{webSafeConfKey}/{sessionType}'
     * METHOD_TYPE - GET
@@ -760,9 +760,9 @@ Return sessions by a speaker.
 ---
    
 ### addSessionToWishlist(self, request):
-Add a sessions to users wishlist.
+Add a sessions to users wish list.
 
-    * REQUEST -  WISHLIST_SESSION_POST_REQUEST  VoidMessage, web_safe_key to add session to the wishlist
+    * REQUEST -  WISHLIST_SESSION_POST_REQUEST  VoidMessage, web_safe_key to add session to the wish list
 	* RESPONSE - BooleanMessage - true / false if the operation was successful.
 	* PATH - 'session/addtowishlist/{web_safe_key}'
     * METHOD_TYPE - POST
@@ -770,9 +770,9 @@ Add a sessions to users wishlist.
 ---
 
 ### deleteSessionInWishlist(self, request):
-Removes a sessions from users wishlist.
+Removes a sessions from users wish list.
 
-    * REQUEST -  WISHLIST_SESSION_POST_REQUEST  VoidMessage, web_safe_key to add session to the wishlist
+    * REQUEST -  WISHLIST_SESSION_POST_REQUEST  VoidMessage, web_safe_key to add session to the wish list
 	* RESPONSE - BooleanMessage - true / false if the operation was successful.
 	* PATH - 'session/deletefromwishlist/{web_safe_key}'
     * METHOD_TYPE - POST
@@ -780,7 +780,7 @@ Removes a sessions from users wishlist.
 ---
 
 ### getSessionsInWishlist(self, request):
-Retrives all sessions from users wishlist.
+Retrieves all sessions from user’s wish list.
 
     * REQUEST -  VoidMessage
 	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
@@ -791,7 +791,7 @@ Retrives all sessions from users wishlist.
 
 ### clearUserWishList(self, request):
 
-Clears the users wishlist.
+Clears the user’s wish list.
 
     * REQUEST -  VoidMessage
 	* RESPONSE - BooleanMessage - true / false if the operation was successful.
@@ -801,7 +801,7 @@ Clears the users wishlist.
 ---
 
 ### getAllFutureSessions(self, request):
-Retrives session based on a date.
+Retrieves session based on a date.
 
     * REQUEST -  SessionSearchForm session search parameters
 	* RESPONSE - SessionForms - list of ConferenceSessions by the speaker.
@@ -830,12 +830,12 @@ Gets all the sessions starting within a specified time delta.
 
 
 ### class SetAnnouncementHandler(webapp2.RequestHandler):
-Handles the anouncement get request that come through the CRON. Calls the static method in the conference api `ConferenceApi._cache_announcement()`
+Handles the announcement get request that come through the CRON. Calls the static method in the conference API `ConferenceApi._cache_announcement()`
 
 ---
 
 ### class SetStartingSoon(webapp2.RequestHandler):
-Handles the starting soon get request that come through the CRON. Calls the static method in conference api `ConferenceApi._cache_starting_soon()`
+Handles the starting soon get request that come through the CRON. Calls the static method in conference API `ConferenceApi._cache_starting_soon()`
 
 ---
 
@@ -845,7 +845,7 @@ Handles the task for setting the featured speaker. Call the static method in the
 ---
 
 ### class SendConfirmationEmailHandler(webapp2.RequestHandler):
-Handles the post request for sending emails for the conference creattion
+Handles the post request for sending emails for the conference creation
 
 ---
 
@@ -855,12 +855,12 @@ Handles the post request for sending emails when a speaker registers
 ---
 
 ### class SendSessionEmailHandler(webapp2.RequestHandler):
-Handles the post request for sending emails for the session creattion 
+Handles the post request for sending emails for the session creation 
 
 ---
 
 ### class SendSpeakerEmailHandler(webapp2.RequestHandler):
-Handles the post request for sending emails for the session creattion to the speaker
+Handles the post request for sending emails for the session creation to the speaker
 
 **[Back to top](#table-of-contents)**
 ---
@@ -928,7 +928,7 @@ The entity to store the Conference
 The entity to store the Profile information
 
 	* display_name - the display name for the profile
-	* main_email - main email address ussed for communication
+	* main_email - main email address used for communication
 	* tee_shirt_size - Tshirt size for the user
 	* conference_keys_to_attend - the conferences that the user has registered to attend
 	* session_wish_list - the sessions that the user wants to attend
@@ -948,8 +948,8 @@ The entity to store the Profile information
 [spkr]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/speakers.jpg "Speakers"
 [spkrses]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/speakerssession.jpg "Speaker Sessions"
 [startson]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/startingsoon.jpg "Starting Soon"
-[strson2]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/startingsoon2.jpg "Startig soon data"
-[wishlist]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/wishlist.jpg "Register Speaker"
+[strson2]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/startingsoon2.jpg "Starting soon data"
+[wish list]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/wishlist.jpg "Register Speaker"
 [fstr]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/folderstructure.jpg "Folder Structure"
 [dbdesign]: https://github.com/v2saumb/conferencecentral/blob/master/docs/imgs/databasediag.jpg "Database Design"
 [1]: https://developers.google.com/appengine
@@ -959,9 +959,3 @@ The entity to store the Profile information
 [5]: https://localhost:8080/
 [6]: https://developers.google.com/appengine/docs/python/endpoints/endpoints_tool
 [7]: https://cloud.google.com/appengine/docs/python/ndb/queries
-
-
-
-
-
-

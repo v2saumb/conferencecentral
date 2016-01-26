@@ -621,6 +621,11 @@ class ConferenceApi(remote.Service):
             data['date'] = self._parse_date_string(
                 data['date'], SHORT_DATE, 10).date()
 
+        # check if session date  is within the conference dates
+        if conf.start_date > data['date'] or conf.end_date < data['date']:
+            raise endpoints.BadRequestException(
+                """ Session 'start_date' should be between\
+                [ {} - {}]""".format(conf.start_date, conf.end_date))
         # convert time
         try:
             if data['start_time']:
@@ -634,7 +639,6 @@ class ConferenceApi(remote.Service):
         except:
             raise endpoints.BadRequestException(
                 "Time Format is wrong please pass time like 14:00")
-
         # convert session type
         if data['session_type']:
             data['session_type'] = str(data['session_type'])
