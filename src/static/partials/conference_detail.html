@@ -11,11 +11,11 @@
                 <h5>{{conference.description}}</h5>
                 <div>
                     <label for="registered">Registered/Open: </label>
-                    <span id="registered">{{conference.maxAttendees - conference.seatsAvailable}} / {{conference.maxAttendees}}</span>
+                    <span id="registered">{{conference.max_attendees - conference.seats_available}} / {{conference.max_attendees}}</span>
                 </div>
                 <div>
                     <label for="organizer">Organizer: </label>
-                    <span id="organizer">{{conference.organizerDisplayName}}</span>
+                    <span id="organizer">{{conference.organizer_display_name}}</span>
                 </div>
             </div>
         </div>
@@ -35,12 +35,12 @@
                         </span>
                     </div>
                     <div>
-                        <label for="startDate">Start Date: </label>
-                        <span id="startDate">{{conference.startDate | date:'dd-MMMM-yyyy'}}</span>
+                        <label for="start_date">Start Date: </label>
+                        <span id="start_date">{{conference.start_date | date:'dd-MMMM-yyyy'}}</span>
                     </div>
                     <div>
-                        <label for="endDate">End Date: </label>
-                        <span id="endDate">{{conference.endDate | date:'dd-MMMM-yyyy'}}</span>
+                        <label for="end_date">End Date: </label>
+                        <span id="end_date">{{conference.end_date | date:'dd-MMMM-yyyy'}}</span>
                     </div>
                 </fieldset>
             </form>
@@ -54,12 +54,12 @@
             <a class="btn btn-primary" ng-show="isUserAttending" ng-click="unregisterFromConference()" ng-disabled="loading"><i class="fa fa-undo"></i> Unregister</a>
         </div>
         <div class="col-md-2">
-            <a class="btn btn-primary"  href="#/conference/createsession/{{conference.websafeKey}}"
+            <a class="btn btn-primary"  href="#/conference/createsession/{{conference.web_safe_key}}"
             ng-disabled=" vm.isCreateAllowed()|| loading" ng-hide="!getSignedInState()"><i class="fa fa-plus"></i> Create Sessions</a>
             
         </div>
                 <div class="col-md-2">
-            <a class="btn btn-info"  href="#/conference/edit/{{conference.websafeKey}}"
+            <a class="btn btn-info"  href="#/conference/edit/{{conference.web_safe_key}}"
             ng-disabled=" vm.isCreateAllowed() || loading" ng-hide="!getSignedInState()"><i class="fa fa-pencil"></i> Edit Conference </a>
             
         </div>
@@ -68,9 +68,9 @@
         </div>
     </div>
     <hr />
-    <div class="row" ng-if="confsessions">
+    <div class="row" ng-if="Sessions">
         <h3>Sessions</h3>
-        <conference-sessions sessions="confsessions" ></conference-sessions>
+        <conference-sessions sessions="Sessions" ></conference-sessions>
         
     </div>
 </div>

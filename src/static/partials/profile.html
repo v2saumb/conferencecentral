@@ -8,20 +8,20 @@
         <div class="col-md-8">
             <h3>My Profile</h3>
             <form name="profileForm" novalidate role="form">
-                <div class="form-group" ng-class="{'has-warning': profile.displayName != initialProfile.displayName}">
-                    <label for="displayName">Display Name </label>
+                <div class="form-group" ng-class="{'has-warning': profile.display_name != initialProfile.display_name}">
+                    <label for="display_name">Display Name </label>
                     <span class="label label-warning"
-                          ng-show="profile.displayName != initialProfile.displayName"> Changed</span>
-                    <input id="displayName" type="text" name="displayName" ng-model="profile.displayName"
+                          ng-show="profile.display_name != initialProfile.display_name"> Changed</span>
+                    <input id="display_name" type="text" name="display_name" ng-model="profile.display_name"
                            class="form-control"/>
                 </div>
 
-                <div class="form-group" ng-class="{'has-warning': profile.teeShirtSize != initialProfile.teeShirtSize}">
-                    <label for="teeShirtSize">Tee shirt size</label>
+                <div class="form-group" ng-class="{'has-warning': profile.tee_shirt_size != initialProfile.tee_shirt_size}">
+                    <label for="tee_shirt_size">Tee shirt size</label>
                     <span class="label label-warning"
-                          ng-show="profile.teeShirtSize != initialProfile.teeShirtSize"> Changed</span>
-                    <select id="teeShirtSize" ng-model="profile.teeShirtSize" name="teeShirtSize" ng-options="
-shirt.size as shirt.text for shirt in teeShirtSizes"
+                          ng-show="profile.tee_shirt_size != initialProfile.tee_shirt_size"> Changed</span>
+                    <select id="tee_shirt_size" ng-model="profile.tee_shirt_size" name="tee_shirt_size" ng-options="
+shirt.size as shirt.text for shirt in tee_shirt_sizes"
                             class="form-control">
                     </select>
                 </div>

@@ -34,12 +34,12 @@
                     </select>
                 </div>
                 <div class="form-group" ng-controller="DatepickerCtrl">
-                    <label for="startDate">Start Date</label>
+                    <label for="start_date">Start Date</label>
                     <span class="label label-danger"
-                    ng-show="!isValidStartDate()">Start Date must be later or equal to today!</span>
+                    ng-show="!isValidstart_date()">Start Date must be later or equal to today!</span>
                     <p class="input-group">
-                        <input id="startDate" type="text" class="form-control" uib-datepicker-popup="{{format}}"
-                        ng-model="conference.startDate" is-open="opened"
+                        <input id="start_date" type="text" class="form-control" uib-datepicker-popup="{{format}}"
+                        ng-model="conference.start_date" is-open="opened"
                         datepicker-options="dateOptions"
                         close-text="Close"/>
                         <span class="input-group-btn">
@@ -50,12 +50,12 @@
                     </p>
                 </div>
                 <div class="form-group" ng-controller="DatepickerCtrl">
-                    <label for="endDate">End Date</label>
+                    <label for="end_date">End Date</label>
                     <span class="label label-danger"
                     ng-show="!isValidDates()">End Date must be later or equal to Start Date!</span>
                     <p class="input-group">
-                        <input id="endDate" type="text" class="form-control" uib-datepicker-popup="{{format}}"
-                        ng-model="conference.endDate" is-open="opened"
+                        <input id="end_date" type="text" class="form-control" uib-datepicker-popup="{{format}}"
+                        ng-model="conference.end_date" is-open="opened"
                         datepicker-options="dateOptions"
                         close-text="Close"/>
                         <span class="input-group-btn">
@@ -66,12 +66,12 @@
                     </p>
                 </div>
                 <div class="form-group">
-                    <label for="maxAttendees">Max Attendees</label>
+                    <label for="max_attendees">Max Attendees</label>
                     <span class="label label-danger"
-                    ng-show="!isValidMaxAttendees()">Must be an integer!</span>
-                    <!-- The input type is text as the conference.maxAttendees will be undefined,
-                    hence isValidMaxAttendees will be true when input type is number -->
-                    <input id="maxAttendees" type="text" name="maxAttendees" ng-model="conference.maxAttendees"
+                    ng-show="!isValidmax_attendees()">Must be an integer!</span>
+                    <!-- The input type is text as the conference.max_attendees will be undefined,
+                    hence isValidmax_attendees will be true when input type is number -->
+                    <input id="max_attendees" type="text" name="max_attendees" ng-model="conference.max_attendees"
                     class="form-control"/>
                 </div>
                 <button ng-click="vm.goBack()" class="btn btn-success"

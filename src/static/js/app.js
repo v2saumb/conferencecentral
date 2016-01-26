@@ -23,12 +23,12 @@ config(['$routeProvider', 'toastrConfig',
             controller: 'CreateConferenceCtrl',
             controllerAs: 'vm'
         }).
-        when('/conference/edit/:websafeKey', {
+        when('/conference/edit/:web_safe_key', {
             templateUrl: '/partials/create_conferences.html',
             controller: 'EditConferenceCtrl',
             controllerAs: 'vm'
         }).
-        when('/conference/detail/:websafeConferenceKey', {
+        when('/conference/detail/:webSafeConfKey', {
             templateUrl: '/partials/conference_detail.html',
             controller: 'ConferenceDetailCtrl'
         }).
@@ -38,7 +38,7 @@ config(['$routeProvider', 'toastrConfig',
         }).
         when('/profile/session-wishlist', {
             templateUrl: '/partials/view_sessions.html',
-            controller: 'SessionWishListCtrl',
+            controller: 'session_wish_listCtrl',
             controllerAs: "vm"
         }).
         when('/speaker/register', {
@@ -51,12 +51,12 @@ config(['$routeProvider', 'toastrConfig',
             controller: 'ViewSpeakerCtrl',
             controllerAs: 'vm'
         }).
-        when('/speaker/sessions/:websafeKey', {
+        when('/speaker/sessions/:web_safe_key', {
             templateUrl: '/partials/speaker_sessions.html',
             controller: 'ViewSpeakerSessionsCtrl',
             controllerAs: 'vm'
         }).
-        when('/speaker/:speakername/:websafeKey', {
+        when('/speaker/:speaker_name/:web_safe_key', {
             templateUrl: '/partials/view_sessions.html',
             controller: 'ViewSpeakerSessionsCtrl',
             controllerAs: 'vm'
@@ -66,9 +66,9 @@ config(['$routeProvider', 'toastrConfig',
             controller: 'ViewAllSessionsCtrl',
             controllerAs: 'vm'
         }).
-        when('/conference/createsession/:websafeConferenceKey', {
+        when('/conference/createsession/:webSafeConfKey', {
             templateUrl: '/partials/create_session.html',
-            controller: 'CreateConfSessionsCtrl',
+            controller: 'CreateSessionsCtrl',
             controllerAs: 'vm'
         }).
         when('/home', {
@@ -81,7 +81,7 @@ config(['$routeProvider', 'toastrConfig',
             autoDismiss: true,
             timeOut: 1500,
             containerId: 'toast-container',
-            maxOpened: 1,
+            maxOpened: 2,
             newestOnTop: true,
             progressBar: true,
             closeButton: true,

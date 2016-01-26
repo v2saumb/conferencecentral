@@ -53,12 +53,12 @@
                     </thead>
                     <tbody>
                     <tr ng-repeat="conference in conferences | startFrom: pagination.currentPage * pagination.pageSize | limitTo: pagination.pageSize">
-                        <td><a href="#/conference/detail/{{conference.websafeKey}}">Details</a></td>
+                        <td><a href="#/conference/detail/{{conference.web_safe_key}}">Details</a></td>
                         <td>{{conference.name}}</td>
                         <td>{{conference.city}}</td>
-                        <td>{{conference.startDate | date:'dd-MMMM-yyyy'}}</td>
-                        <td>{{conference.organizerDisplayName}}</td>
-                        <td>{{conference.maxAttendees - conference.seatsAvailable}} / {{conference.maxAttendees}}</td>
+                        <td>{{conference.start_date | date:'dd-MMMM-yyyy'}}</td>
+                        <td>{{conference.organizer_display_name}}</td>
+                        <td>{{conference.max_attendees - conference.seats_available}} / {{conference.max_attendees}}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -102,13 +102,13 @@
                         <div class="form-group-condensed">
                             <label class="form-control-static">Field: </label>
                             <select class="form-control-sm" ng-model="filters[$index].field"
-                                    ng-options="field.displayName for field in filtereableFields">
+                                    ng-options="field.display_name for field in filtereableFields">
                             </select>
                         </div>
                         <div class="form-group-condensed">
                             <label class="form-control-static">Operator: </label>
                             <select class="form-control-sm" ng-model="filters[$index].operator"
-                                    ng-options="operator.displayName for operator in operators">
+                                    ng-options="operator.display_name for operator in operators">
                             </select>
                         </div>
                         <div class="form-roup-condensed" ng-class="{'has-error': filters[$index].value.length == 0}">

@@ -16,8 +16,8 @@ var conferenceApp = conferenceApp || {};
  */
 conferenceApp.directives = angular.module('conferenceDirectives', ['ui.bootstrap', 'toastr']);
 
-conferenceApp.directives.directive('conferenceSessions', confSessionDir);
-confSessionCtrl.$inject = ['$scope', 'toastr']
+conferenceApp.directives.directive('conferenceSessions', SessionDir);
+SessionCtrl.$inject = ['$scope', 'toastr']
 
 conferenceApp.directives.directive('collapsibleItemDetails', collapsibleItemDetails);
 collapsibleItemDetails.$inject = ['$timeout'];
@@ -26,12 +26,12 @@ collapsableCtrl.$inject = ['$scope']
 conferenceApp.directives.directive('userNameDisplay', userNameDisplayDir);
 
 
-function confSessionDir() {
+function SessionDir() {
     var dir = {
         restrict: 'E',
         scope: {
             sessions: '=',
-            showConfName: '@',
+            showconference_name: '@',
             showAddRemove: '@',
             showFilter: '@',
             showDetails: '@',
@@ -40,14 +40,14 @@ function confSessionDir() {
         },
         replace: true,
         templateUrl: "/partials/directives/conf-sessions.html",
-        link: confSessionLink,
-        controller: confSessionCtrl,
+        link: SessionLink,
+        controller: SessionCtrl,
         controllerAs: 'csCtrl'
 
     };
     return dir;
 
-    function confSessionLink(scope, iElement, iAttrs) {
+    function SessionLink(scope, iElement, iAttrs) {
         if (!iAttrs.showFilter) {
             scope.showFilter = "true"
         }
@@ -60,25 +60,24 @@ function confSessionDir() {
     }
 }
 
-function confSessionCtrl($scope, toastr) {
+function SessionCtrl($scope, toastr) {
 
     $scope.filterText = "";
     var vm = this;
     vm.addSessionToWishlist = function(session) {
         vm.loading = true;
         gapi.client.conference.addSessionToWishlist({
-            websafeKey: session.websafeKey
+            web_safe_key: session.web_safe_key
         }).
         execute(function(resp) {
             $scope.$apply(function() {
                 vm.loading = false;
                 if (resp.error) {
-                    if (resp.code && resp.code == 409) {
-                        var errorMessage = resp.error.message || '';
-                        toastr.error('Error:' + errorMessage);
-                    }
+                    var errorMessage = resp.error.message || '';
+                    toastr.error('Error:' + errorMessage);
+
                 } else {
-                    toastr.success("Session [ " + session.session_name + " ] added to your wishlist")
+                    toastr.success("Session [ " + session.name + " ] added to your wishlist")
                 }
             });
         });
@@ -87,19 +86,18 @@ function confSessionCtrl($scope, toastr) {
     vm.deleteSessionInWishlist = function(session) {
         vm.loading = true;
         gapi.client.conference.deleteSessionInWishlist({
-            websafeKey: session.websafeKey
+            web_safe_key: session.web_safe_key
         }).
         execute(function(resp) {
             $scope.$apply(function() {
                 vm.loading = false;
                 if (resp.error) {
-                    if (resp.code && resp.code == 409) {
-                        var errorMessage = resp.error.message || '';
-                        toastr.warning('Error:' + errorMessage);
-                    }
+                    var errorMessage = resp.error.message || '';
+                    toastr.warning('Error:' + errorMessage);
+
                 } else {
                     if ($scope.autoArchive) {
-                        toastr.success("Session [ " + session.session_name + " ] removed to your wishlist")
+                        toastr.success("Session [ " + session.name + " ] removed to your wishlist")
                         $scope.sessions.pop(session);
                     }
 

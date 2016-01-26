@@ -62,17 +62,17 @@
         </div>
         <div class="item container btn-warning speaker-container">
                 <h1>Featured Speaker</h1>
-                <div class="row" ng-if="cVm.featuredSpeaker">
+                <div class="row" ng-if="cVm.featured_speaker">
                     <h4> Meeet Our Featured Speaker!</h4>
-                    <div class="col-md-12 "><p><h3 class="btn-primary">{{cVm.featuredSpeaker.speakerName}}</h3></p>
-                    <p> {{cVm.featuredSpeaker.speakerName}} is speaking at {{cVm.featuredSpeaker.confName}}. </p>
-                    <p> Following are the sessions by {{cVm.featuredSpeaker.speakerName}} at this conference</p>
+                    <div class="col-md-12 "><p><h3 class="btn-primary">{{cVm.featured_speaker.speaker_name}}</h3></p>
+                    <p> {{cVm.featured_speaker.speaker_name}} is speaking at {{cVm.featured_speaker.conference_name}}. </p>
+                    <p> Following are the sessions by {{cVm.featured_speaker.speaker_name}} at this conference</p>
                     <ul class=" list-inline session-list">
-                        <li ng-repeat="session in cVm.featuredSpeaker.sessions" class="btn-info">{{session}}               </li>
+                        <li ng-repeat="session in cVm.featured_speaker.sessions" class="btn-info">{{session}}               </li>
                     </ul>
                 </div>
             </div>
-            <div class="row" ng-if="!cVm.featuredSpeaker">
+            <div class="row" ng-if="!cVm.featured_speaker">
                 <h4>No Featured speakes yet!. Watch this page featured speakers will be aded soon!</h4>
             </div>
             <ul class="list-inline intro-social-buttons">

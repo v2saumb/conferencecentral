@@ -20,7 +20,7 @@
                 <tr>
                     <th ng-if="showDetails==='true'">Session Details</th>
                     <th>Date Time(24Hrs Format)</th>
-                    <th ng-if="showConfName">Conference</th>
+                    <th ng-if="showconference_name">Conference</th>
                     <th>Name</th>
                     <th>Type</th>
                     <th ng-if="showAddRemove!=='false'">WishList</th>
@@ -30,9 +30,9 @@
                 <tr ng-repeat="session in sessions| filter:filterText">
                     <td ng-if="showDetails==='true'"><collapsible-Item-Details item-type="SESSION" item="session"></collapsible-Item-Details></td>
                     <td >{{session.date}}</td>
-                    <td  ng-if="showConfName" >{{session.confName}}</td>
-                    <td >{{session.session_name}}</td>
-                    <td >{{session.type_of_session}}</td>
+                    <td  ng-if="showconference_name" >{{session.conference_name}}</td>
+                    <td >{{session.name}}</td>
+                    <td >{{session.session_type}}</td>
                     <td ng-if="showAddRemove!=='false'"><button type="button" class="btn btn-primary" ng-disabled="csCtrl.loading" ng-click="csCtrl.addSessionToWishlist(session)"><i class="fa fa-plus"></i>  </button> <button type="button" class="btn btn-danger" ng-disabled="csCtrl.loading" ng-click="csCtrl.deleteSessionInWishlist(session)"><i class="fa fa-minus"></i>  </button></td>
                 </tr>
             </tbody>
